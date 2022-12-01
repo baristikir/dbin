@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+	/* Chrome, Safari and Opera */
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+	.no-scrollbar {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+	.primary-border {
+		@apply border border-gray-300/30 dark:border-gray-500/40;
+	}
+	.primary-border-t {
+		@apply border-t border-gray-300/30 dark:border-gray-500/40;
+	}
+
+	.gridBox-base {
+		@apply h-full px-4 py-6 rounded-xl dark:bg-gray-800 bg-gray-50;
+	}
+	.gridBox-base-inversed {
+		@apply h-full px-4 py-6 bg-gray-700 rounded-xl dark:bg-white;
+	}
+}
+
+@layer base {
+	::selection {
+		@apply text-gray-50 dark:text-gray-900 bg-radix-blue-5;
+	}
+}
+
+* {
+	@apply box-border;
+}
+
+body {
+	@apply antialiased text-gray-900 bg-white dark:bg-gray-900 dark:text-white;
+}
+
+form {
+	margin-block-end: 0;
+}
+
+/* This correctly styles the minimal progress bar that is displayed when navigating between pages */
+#nprogress {
+	@apply z-50 pointer-events-none;
+}
+#nprogress .bar {
+	@apply bg-radix-blue-10 fixed z-50 top-0 left-0 w-full h-0.5;
+}
