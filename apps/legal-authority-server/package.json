@@ -1,0 +1,40 @@
+{
+	"name": "@dbin/legal-authority-server",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/app.ts",
+	"scripts": {
+		"build": "tsup src/app.ts --format cjs",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+		"dev": "tsup src/app.ts --format cjs --watch --onSuccess \"node dist/app.js\"",
+		"lint": "tsc --noEmit && TIMING=1 eslint \"src/**/*.ts*\"",
+		"start": "node dist/app.js",
+		"test": "jest --detectOpenHandles"
+	},
+	"author": "Baris Tikir",
+	"license": "ISC",
+	"dependencies": {
+		"@dbin/afj-services": "*",
+		"@aries-framework/core": "^0.3.1",
+		"@aries-framework/node": "^0.3.1",
+		"@pothos/core": "^3.24.0",
+		"cors": "^2.8.5",
+		"express": "^4.18.2",
+		"graphql": "^16.6.0",
+		"graphql-ws": "^5.11.2",
+		"graphql-yoga": "^3.2.1",
+		"morgan": "^1.10.0",
+		"ws": "^8.11.0"
+	},
+	"devDependencies": {
+		"@dbin/server-lib": "*",
+		"@types/body-parser": "^1.19.2",
+		"@types/cors": "^2.8.13",
+		"@types/express": "^4.17.15",
+		"@types/morgan": "^1.9.4",
+		"@types/node": "^18.11.18",
+		"ts-node": "^10.9.1",
+		"tsup": "^6.5.0",
+		"typescript": "^4.9.4"
+	}
+}

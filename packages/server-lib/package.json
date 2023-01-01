@@ -1,0 +1,24 @@
+{
+	"name": "@dbin/server-lib",
+	"version": "1.0.0",
+	"sideEffects": false,
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"license": "MIT",
+	"scripts": {
+		"build": "tsup ./index.ts --dts",
+		"lint": "eslint . --ext .ts,.js,.tsx,.jsx",
+		"lint:fix": "eslint . --ext .ts,.js,.tsx,.jsx --fix",
+		"lint:report": "eslint . --format json --output-file ../../lint-results/app-store.json"
+	},
+	"devDependencies": {
+		"@dbin/tsconfig": "*",
+		"@types/node": "^18.11.18",
+		"tsup": "^6.5.0",
+		"typescript": "^4.9.4"
+	},
+	"dependencies": {
+		"graphql": "^16.6.0"
+	}
+}

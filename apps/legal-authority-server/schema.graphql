@@ -1,0 +1,44 @@
+type Agent {
+  isInitialized: Boolean!
+  label: String!
+}
+
+type Connection {
+  alias: String
+  autoAcceptConnection: Boolean
+  did: String
+  errMessage: String
+
+  """Connection Record ID, often known as connectionId"""
+  id: String!
+  invitationDid: String
+  isReady: Boolean!
+  isRequester: Boolean!
+  mediatorId: String
+  oobId: String
+  protocol: String
+  role: String!
+  state: String!
+  theirDid: String
+  theirLabel: String
+  threadId: String
+  type: String!
+}
+
+type Credential {
+  connectionId: String
+  id: String!
+  protocolVersion: String!
+  state: String!
+  threadId: String!
+  type: String!
+}
+
+scalar DateTime
+
+type Query {
+  agent: Agent!
+  connection(id: String!): Connection!
+  credentialByConnection(connectionId: String!): [Credential!]!
+  credentials: [Credential!]!
+}
