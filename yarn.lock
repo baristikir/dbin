@@ -756,6 +756,16 @@
   resolved "https://registry.yarnpkg.com/@pothos/core/-/core-3.24.0.tgz#1a555c501c9fc09c588196f83e6b0075571a59c5"
   integrity sha512-LfWzUrmjhg9WQNUntQMJWOfMLb51AMunqBOC66zWEIi2GR4IcAQCPwzy77713Zd/awtIInIuHv4x5/1whAWeeA==
 
+"@pothos/plugin-scope-auth@^3.16.0":
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/@pothos/plugin-scope-auth/-/plugin-scope-auth-3.16.0.tgz#348913b319d456477526e7ad33f8d357b7a99965"
+  integrity sha512-VMIKjIrqQQirK7eTSeVcW7KY/ss+cE5kfjp58fhAiDtY8DXdBiRl2w6K4G/CaqZH8XuZ3HcuVvcahdkFHHw7cQ==
+
+"@pothos/plugin-validation@^3.8.7":
+  version "3.8.7"
+  resolved "https://registry.yarnpkg.com/@pothos/plugin-validation/-/plugin-validation-3.8.7.tgz#b5c46f313cc7fc96ff19e7b52b7ee6e13d69ba40"
+  integrity sha512-V+gJR6dA0U7SRtn3K2F32EwyiynTH0rQkdayl3WFQvT5cB+/nDYp2R5XYGDx5Q8s4R6xqV8NZg1N8IsFiGnIMA==
+
 "@radix-ui/colors@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@radix-ui/colors/-/colors-0.1.8.tgz#b08c62536fc462a87632165fb28e9b18f9bd047e"

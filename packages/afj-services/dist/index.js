@@ -26,7 +26,9 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var afj_services_exports = {};
 __export(afj_services_exports, {
   AgentConfigServices: () => agentConfigs_exports,
-  AgentServices: () => agentServices_exports,
+  AgentService: () => AgentService,
+  ConnectionService: () => ConnectionService,
+  CredentialService: () => CredentialService,
   LedgerServices: () => ledgerServices_exports
 });
 module.exports = __toCommonJS(afj_services_exports);
@@ -102,21 +104,115 @@ async function createAgent({ config, indyLedgers }) {
   return agent;
 }
 
-// src/agentServices.ts
-var agentServices_exports = {};
-__export(agentServices_exports, {
-  AgentServices: () => AgentServices
-});
-var AgentServices = class {
+// src/baseService.ts
+var ServiceWithAgent = class {
   agent;
   constructor(agent) {
     this.agent = agent;
   }
 };
+
+// src/agentServices.ts
+var AgentService = class extends ServiceWithAgent {
+  async config() {
+  }
+  async issueCredential() {
+  }
+  async requestCredentialProof() {
+  }
+};
+
+// src/credentialServices.ts
+var import_core2 = require("@aries-framework/core");
+var CredentialService = class extends ServiceWithAgent {
+  async allCredentials() {
+    const creds = await this.agent.credentials.getAll();
+    return creds;
+  }
+  async credentialByConnection(connectionOrId) {
+    let connectionRecord;
+    if (typeof connectionOrId === "string") {
+      connectionRecord = await this.agent.connections.findById(connectionOrId);
+    } else {
+      connectionRecord = connectionOrId;
+    }
+    const creds = await this.agent.credentials.getAll();
+    return creds;
+  }
+};
+
+// src/connectionServices.ts
+var ConnectionService = class extends ServiceWithAgent {
+  async createInvitation(domainUrl) {
+    const outOfBandRecord = await this.agent.oob.createInvitation();
+    const invitationUrl = outOfBandRecord.outOfBandInvitation.toUrl({
+      domain: domainUrl
+    });
+    return {
+      outOfBandRecord,
+      invitationUrl
+    };
+  }
+  async receiveInvitation(invitationUrl) {
+    const { connectionRecord } = await this.agent.oob.receiveInvitationFromUrl(
+      invitationUrl
+    );
+    return connectionRecord;
+  }
+  async accpetInvitation(invitationUrl) {
+    const { outOfBandRecord } = await this.agent.oob.receiveInvitationFromUrl(
+      invitationUrl
+    );
+    const { connectionRecord } = await this.agent.oob.acceptInvitation(
+      outOfBandRecord.id,
+      {}
+    );
+    return connectionRecord;
+  }
+  async allConnections(filter) {
+    const connectionRecords = await this.agent.connections.getAll();
+    if (filter) {
+      return connectionRecords.filter((connectionRecord) => {
+        for (const key in filter) {
+          if (filter[key] === void 0 || filter[key] !== connectionRecord[key])
+            return false;
+        }
+        return true;
+      });
+    }
+    return connectionRecords;
+  }
+  async connectionById(connectionId, filter) {
+    const connectionRecord = await this.agent.connections.findById(connectionId);
+    return connectionRecord;
+  }
+  async removeConnection(connectionOrId) {
+    let connectionRecord;
+    if (typeof connectionOrId === "string") {
+      connectionRecord = await this.agent.connections.findById(
+        connectionOrId
+      );
+      if (connectionRecord === null) {
+        console.log(
+          `[connection.services] Connection record couldn't be found with id '${connectionOrId}'`
+        );
+        return false;
+      }
+    } else {
+      connectionRecord = connectionOrId;
+    }
+    await this.agent.connections.deleteById(
+      connectionRecord.id
+    );
+    return true;
+  }
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AgentConfigServices,
-  AgentServices,
+  AgentService,
+  ConnectionService,
+  CredentialService,
   LedgerServices
 });
 //# sourceMappingURL=index.js.map

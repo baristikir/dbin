@@ -25,6 +25,15 @@ type Connection {
   type: String!
 }
 
+input ConnectionsFilterInput {
+  isReady: Boolean
+  isRequester: Boolean
+  protocol: String
+  state: String
+  theirDid: String
+  theirLabel: String
+}
+
 type Credential {
   connectionId: String
   id: String!
@@ -36,9 +45,19 @@ type Credential {
 
 scalar DateTime
 
+type Mutation {
+  createInvitation: String!
+  removeConnection(input: RemoveConnectionInput!): Boolean!
+}
+
 type Query {
   agent: Agent!
   connection(id: String!): Connection!
+  connections(filter: ConnectionsFilterInput): [Connection!]!
   credentialByConnection(connectionId: String!): [Credential!]!
   credentials: [Credential!]!
+}
+
+input RemoveConnectionInput {
+  connectionId: String!
 }

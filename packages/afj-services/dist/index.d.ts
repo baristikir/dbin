@@ -1,4 +1,4 @@
-import { InitConfig, Agent } from '@aries-framework/core';
+import { InitConfig, Agent, ConnectionRecord, OutOfBandRecord, DidExchangeState, HandshakeProtocol } from '@aries-framework/core';
 
 declare function fetchGenesisTransaction(ledgerUrl: string): Promise<string>;
 
@@ -36,17 +36,44 @@ declare namespace agentConfigs {
   };
 }
 
-declare class AgentServices {
+interface WithAgent {
+    agent: Agent;
+}
+declare class ServiceWithAgent implements WithAgent {
     agent: Agent;
     constructor(agent: Agent);
 }
 
-type agentServices_AgentServices = AgentServices;
-declare const agentServices_AgentServices: typeof AgentServices;
-declare namespace agentServices {
-  export {
-    agentServices_AgentServices as AgentServices,
-  };
+declare class AgentService extends ServiceWithAgent {
+    config(): Promise<void>;
+    issueCredential(): Promise<void>;
+    requestCredentialProof(): Promise<void>;
 }
 
-export { agentConfigs as AgentConfigServices, agentServices as AgentServices, ledgerServices as LedgerServices };
+declare class CredentialService extends ServiceWithAgent {
+    allCredentials(): Promise<any>;
+    credentialByConnection(connectionOrId: ConnectionRecord | string): Promise<any>;
+}
+
+type Maybe<T> = T | null | undefined;
+interface ConnectionQueryFilter {
+    state?: Maybe<DidExchangeState>;
+    protocol?: Maybe<HandshakeProtocol>;
+    isReady?: Maybe<boolean>;
+    isRequester?: Maybe<boolean>;
+    theirDid?: Maybe<string>;
+    theirLabel?: Maybe<string>;
+}
+declare class ConnectionService extends ServiceWithAgent {
+    createInvitation(domainUrl: string): Promise<{
+        outOfBandRecord: OutOfBandRecord;
+        invitationUrl: string;
+    }>;
+    receiveInvitation(invitationUrl: string): Promise<ConnectionRecord>;
+    accpetInvitation(invitationUrl: string): Promise<ConnectionRecord>;
+    allConnections(filter?: ConnectionQueryFilter): Promise<ConnectionRecord[]>;
+    connectionById(connectionId: string, filter?: ConnectionQueryFilter): Promise<ConnectionRecord>;
+    removeConnection(connectionOrId: ConnectionRecord | string): Promise<boolean>;
+}
+
+export { agentConfigs as AgentConfigServices, AgentService, ConnectionService, CredentialService, ledgerServices as LedgerServices };

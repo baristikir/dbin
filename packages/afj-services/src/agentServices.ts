@@ -1,9 +1,11 @@
-import { Agent } from "@aries-framework/core";
+import {
+	ConnectionRecord,
+	OutOfBandRecord,
+} from "@aries-framework/core";
+import { ServiceWithAgent } from "./baseService";
 
-export class AgentServices {
-	agent: Agent;
-
-	constructor(agent: Agent) {
-		this.agent = agent;
-	}
+export class AgentService extends ServiceWithAgent {
+	async config() {}
+	async issueCredential() {}
+	async requestCredentialProof() {}
 }
