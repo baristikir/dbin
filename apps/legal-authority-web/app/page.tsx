@@ -1,9 +1,14 @@
-export default function Page() {
-	return (
-		<div>
-			<main>
-				<h1 className="text-5xl font-medium">Legal Authority</h1>
-			</main>
-		</div>
-	);
+import loadSerializableQuery from "../src/relay/loadSerializableQuery";
+import ClientView from "./ClientView";
+import MainViewQueryNode, {
+	MainViewQuery,
+} from "../__generated__/MainViewQuery.graphql";
+
+export default async function Page() {
+	const preloadedQuery = await loadSerializableQuery<
+		typeof MainViewQueryNode,
+		MainViewQuery
+	>(MainViewQueryNode.params, {});
+
+	return <ClientView preloadedQuery={preloadedQuery} />;
 }

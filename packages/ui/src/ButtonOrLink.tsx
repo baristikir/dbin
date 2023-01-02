@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
-import { ComponentProps } from "react";
+import { ComponentProps, Fragment } from "react";
 import { useRouter } from "next/router";
 
-export type ButtonOrLinkCompProps = ComponentProps<"button"> &
-	ComponentProps<"a">;
-export interface ButtonOrLinkProps extends ButtonOrLinkCompProps {
+export type ButtonOrLinkCompProps =
+	ComponentProps<"button"> & ComponentProps<"a">;
+export interface ButtonOrLinkProps
+	extends ButtonOrLinkCompProps {
 	/**
 	 * If the link should preserve the `redirect` parameter, set this to `true.
 	 */
@@ -25,14 +26,16 @@ export function ButtonOrLink({
 }: ButtonOrLinkProps) {
 	const router = useRouter();
 	const isLink = typeof href !== "undefined";
-	const ButtonOrLink = isLink ? "a" : "button";
+	const ButtonOrLink = isLink ? Fragment : "button";
 
 	let content = <ButtonOrLink {...props} />;
 
 	if (isLink) {
 		const finalHref =
 			preserveRedirect && router.query.redirect
-				? `${href}?redirect=${encodeURIComponent(router.query.redirect as string)}`
+				? `${href}?redirect=${encodeURIComponent(
+						router.query.redirect as string
+				  )}`
 				: href;
 
 		return <Link href={finalHref}>{content}</Link>;

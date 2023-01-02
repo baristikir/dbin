@@ -381,7 +381,7 @@ async function initServer(port2) {
       key: "demoagentlegalauthority0000000000000000000"
     },
     endpoints: [`http://localhost:${String(port2)}`],
-    logger: new import_core2.ConsoleLogger(import_core2.LogLevel.info),
+    logger: new import_core2.ConsoleLogger(import_core2.LogLevel.debug),
     publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED
   });
   agent = await import_afj_services3.AgentConfigServices.createAgent({

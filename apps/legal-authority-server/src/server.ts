@@ -44,7 +44,7 @@ export async function initServer(port: number) {
 			},
 			// todo Resolve endpoints by NODE_ENV -> dev | prod
 			endpoints: [`http://localhost:${String(port)}`],
-			logger: new ConsoleLogger(LogLevel.info),
+			logger: new ConsoleLogger(LogLevel.debug),
 			// BC Greenlight Public DID Seed
 			publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED,
 			// VON local devnet Public DID Seed
