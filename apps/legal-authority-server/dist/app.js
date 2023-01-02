@@ -76,7 +76,7 @@ var require_dist = __commonJS({
 var import_express = __toESM(require("express"));
 var import_morgan = __toESM(require("morgan"));
 var import_core2 = require("@aries-framework/core");
-var import_node = require("@aries-framework/node");
+var import_node2 = require("@aries-framework/node");
 var import_ws = require("ws");
 var import_ws2 = require("graphql-ws/lib/use/ws");
 var import_afj_services3 = require("@dbin/afj-services");
@@ -302,6 +302,55 @@ builder.queryField(
   })
 );
 
+// src/utils/wallet.ts
+var import_IndyWallet = require("@aries-framework/core/build/wallet/IndyWallet");
+var import_node = require("@aries-framework/node");
+var import_node_crypto = require("crypto");
+async function createSeed(agent2) {
+  const seed = (0, import_node_crypto.randomBytes)(16).toString("hex");
+  console.log("walletConfig: ", {
+    walletConfig: agent2.wallet.walletConfig
+  });
+  const wallet = agent2.dependencyManager.resolve(import_IndyWallet.IndyWallet);
+  const [did, verkey] = await import_node.agentDependencies.indy.createAndStoreMyDid(
+    wallet.handle,
+    {
+      seed
+    }
+  );
+  return {
+    seed,
+    did,
+    verkey
+  };
+}
+
+// src/graphql/resolvers/didResolver.ts
+var DidObjectRef = builder.objectRef("Did");
+DidObjectRef.implement({
+  fields: (t) => ({
+    did: t.exposeString("did"),
+    verkey: t.exposeString("verkey")
+  })
+});
+builder.mutationField(
+  "createDid",
+  (t) => t.field({
+    type: DidObjectRef,
+    deprecationReason: "Not compatible with afj-0.3.x version",
+    resolve: async (_root, _args, { agent: agent2 }) => {
+      const didAndSeed = await createSeed(agent2);
+      console.log(
+        "secret seed: ",
+        didAndSeed.seed,
+        "\n for did: ",
+        didAndSeed.did
+      );
+      return didAndSeed;
+    }
+  })
+);
+
 // src/graphql/index.ts
 var IS_PRODUCTION = process.env.NODE_ENV === "production";
 var schema = builder.toSchema({});
@@ -346,8 +395,10 @@ async function initServer(port2) {
       }
     ]
   });
-  agent.registerOutboundTransport(new import_core2.HttpOutboundTransport());
-  const inboundTransporter = new import_node.HttpInboundTransport({
+  agent.registerOutboundTransport(
+    new import_core2.HttpOutboundTransport()
+  );
+  const inboundTransporter = new import_node2.HttpInboundTransport({
     port: port2,
     app
   });
@@ -376,7 +427,14 @@ async function initServer(port2) {
         aegnt: getAgent()
       },
       onSubscribe: async (ctx, msg) => {
-        const { schema: schema2, execute, subscribe, contextFactory, parse, validate } = yoga.getEnveloped({
+        const {
+          schema: schema2,
+          execute,
+          subscribe,
+          contextFactory,
+          parse,
+          validate
+        } = yoga.getEnveloped({
           ...ctx,
           req: ctx.extra.request,
           socket: ctx.extra.socket,

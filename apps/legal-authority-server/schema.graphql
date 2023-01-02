@@ -45,7 +45,13 @@ type Credential {
 
 scalar DateTime
 
+type Did {
+  did: String!
+  verkey: String!
+}
+
 type Mutation {
+  createDid: Did! @deprecated(reason: "Not compatible with afj-0.3.x version")
   createInvitation: String!
   removeConnection(input: RemoveConnectionInput!): Boolean!
 }

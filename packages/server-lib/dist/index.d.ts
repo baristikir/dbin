@@ -1,5 +1,5 @@
 import { GraphQLSchema } from 'graphql';
-import { Agent, ConnectionRecord, CredentialExchangeRecord } from '@aries-framework/core';
+import { DidInfo, Agent, ConnectionRecord, CredentialExchangeRecord } from '@aries-framework/core';
 
 declare function writeSchema(schema: GraphQLSchema, pathTo: string): void;
 
@@ -10,6 +10,8 @@ declare namespace graphqlUtils {
   };
 }
 
+interface DidObjectType extends DidInfo {
+}
 interface AgentObjectType extends Agent {
 }
 interface ConnectionObjectType extends ConnectionRecord {
@@ -17,11 +19,13 @@ interface ConnectionObjectType extends ConnectionRecord {
 interface CredentialObjectType extends CredentialExchangeRecord {
 }
 
+type schemaObjects_DidObjectType = DidObjectType;
 type schemaObjects_AgentObjectType = AgentObjectType;
 type schemaObjects_ConnectionObjectType = ConnectionObjectType;
 type schemaObjects_CredentialObjectType = CredentialObjectType;
 declare namespace schemaObjects {
   export {
+    schemaObjects_DidObjectType as DidObjectType,
     schemaObjects_AgentObjectType as AgentObjectType,
     schemaObjects_ConnectionObjectType as ConnectionObjectType,
     schemaObjects_CredentialObjectType as CredentialObjectType,
