@@ -11,6 +11,7 @@ function radixToTailwind(name) {
 	};
 }
 
+/** @type {import("tailwindcss").Config} */
 module.exports = {
 	content: [
 		`app/**/*.{js,ts,jsx,tsx}`,
@@ -19,6 +20,9 @@ module.exports = {
 	],
 	theme: {
 		extend: {
+			animation: {
+				"spin-fast": "spin 0.5s linear infinite",
+			},
 			colors: {
 				...radixToTailwind("red"),
 				...radixToTailwind("blue"),

@@ -32,6 +32,7 @@
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^2.9.10",
+		"@tippyjs/react": "^4.2.6",
 		"clsx": "^1.2.1",
 		"next": "13.0.0",
 		"phosphor-react": "^1.4.1",
