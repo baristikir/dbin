@@ -22,7 +22,7 @@ builder.queryField("credentials", (t) =>
 		type: [CredentialObjectRef],
 		args: {},
 		resolve: async (_root, {}, { agent }) => {
-			const credentialService = new CredentialService(agent!);
+			const credentialService = new CredentialService(agent);
 			const credentials = await credentialService.allCredentials();
 
 			return credentials;

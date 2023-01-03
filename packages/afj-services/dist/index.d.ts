@@ -1,3 +1,4 @@
+import * as _aries_framework_core from '@aries-framework/core';
 import { InitConfig, Agent, ConnectionRecord, OutOfBandRecord, DidExchangeState, HandshakeProtocol } from '@aries-framework/core';
 
 declare function fetchGenesisTransaction(ledgerUrl: string): Promise<string>;
@@ -36,12 +37,13 @@ declare namespace agentConfigs {
   };
 }
 
+type TempAgent = Agent<{}>;
 interface WithAgent {
-    agent: Agent;
+    agent: TempAgent;
 }
 declare class ServiceWithAgent implements WithAgent {
-    agent: Agent;
-    constructor(agent: Agent);
+    agent: TempAgent;
+    constructor(agent: TempAgent);
 }
 
 declare class AgentService extends ServiceWithAgent {
@@ -51,8 +53,8 @@ declare class AgentService extends ServiceWithAgent {
 }
 
 declare class CredentialService extends ServiceWithAgent {
-    allCredentials(): Promise<any>;
-    credentialByConnection(connectionOrId: ConnectionRecord | string): Promise<any>;
+    allCredentials(): Promise<_aries_framework_core.CredentialExchangeRecord[]>;
+    credentialByConnection(connectionOrId: ConnectionRecord | string): Promise<_aries_framework_core.CredentialExchangeRecord[]>;
 }
 
 type Maybe<T> = T | null | undefined;

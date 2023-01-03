@@ -14,7 +14,7 @@ builder.queryField("agent", (t) =>
 	t.field({
 		type: AgentObjectRef,
 		resolve: async (_root, _args, { agent }) => {
-			return agent!;
+			return agent;
 		},
 	})
 );
