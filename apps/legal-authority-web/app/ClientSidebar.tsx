@@ -8,7 +8,12 @@ import { Browsers, LockKey, ShieldCheck, Wallet } from "phosphor-react";
 
 export function ClientSidebar() {
 	return (
-		<div className="fixed flex h-screen w-[30%] flex-col items-center justify-center bg-gray-900">
+		<div className="fixed flex h-screen w-[30%] flex-col items-center justify-between bg-black">
+			<header className="place-self-start px-8 py-4">
+				<h3 className="text-sm font-medium text-white">
+					Decentralized Business Identity (DBIN)
+				</h3>
+			</header>
 			<nav className="flex w-64 flex-col gap-2">
 				<h6 className="text-lg font-medium text-white">Navigation</h6>
 				<NavigationLink href="/">
@@ -56,6 +61,7 @@ export function ClientSidebar() {
 					)}
 				</NavigationLink>
 			</nav>
+			<footer></footer>
 		</div>
 	);
 }
@@ -77,6 +83,7 @@ const NavigationLink = ({ href, children }: NavigationLinkProps) => {
 			className={clsx(
 				"flex w-full items-center justify-start rounded-lg px-4 py-2.5",
 				"transition-colors duration-200 hover:bg-gray-700 hover:text-white",
+				{ "bg-gray-800": state },
 				{ "font-medium text-white": state, "font-normal text-gray-300": !state }
 			)}
 		>
