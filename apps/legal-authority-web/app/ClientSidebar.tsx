@@ -2,9 +2,9 @@
 
 import clsx from "clsx";
 import Link from "next/link";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Browsers, LockKey, ShieldCheck, Wallet } from "phosphor-react";
-import { useMemo } from "react";
 
 export function ClientSidebar() {
 	return (
@@ -70,8 +70,6 @@ const NavigationLink = ({ href, children }: NavigationLinkProps) => {
 		() => (pathname ? pathname === href : false),
 		[pathname]
 	);
-
-	console.log({ pathname });
 
 	return (
 		<Link
