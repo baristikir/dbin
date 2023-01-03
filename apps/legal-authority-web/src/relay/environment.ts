@@ -12,8 +12,8 @@ import {
 	Variables,
 } from "relay-runtime";
 
-const HTTP_ENDPOINT = process.env
-	.GRAPHQL_SERVER_ENDPOINT as string;
+// const HTTP_ENDPOINT = process.env.PUBLIC_GRAPHQL_SERVER_ENDPOINT as string;
+const HTTP_ENDPOINT = "http://localhost:8000/api/graphql";
 const IS_SERVER = typeof window === typeof undefined;
 const CACHE_TTL = 5 * 1000; // 5 seconds, to resolve preloaded results
 
@@ -43,22 +43,21 @@ export async function networkFetch(
 		throw new Error(
 			`Error fetching GraphQL query '${
 				request.name
-			}' with variables '${JSON.stringify(
-				variables
-			)}': ${JSON.stringify(json.errors)}`
+			}' with variables '${JSON.stringify(variables)}': ${JSON.stringify(
+				json.errors
+			)}`
 		);
 	}
 
 	return json;
 }
 
-export const responseCache: QueryResponseCache | null =
-	IS_SERVER
-		? null
-		: new QueryResponseCache({
-				size: 100,
-				ttl: CACHE_TTL,
-		  });
+export const responseCache: QueryResponseCache | null = IS_SERVER
+	? null
+	: new QueryResponseCache({
+			size: 100,
+			ttl: CACHE_TTL,
+	  });
 
 function createNetwork() {
 	async function fetchQuery(
@@ -84,13 +83,11 @@ function createNetwork() {
 		variables: Variables
 	): Observable<any> {
 		const subscriptionClient = createClient({
-			url: "ws://localhost:8080/api/graphql",
+			url: "ws://localhost:8000/api/graphql",
 		});
 		return Observable.create((sink) => {
 			if (!operation.text) {
-				return sink.error(
-					new Error("Operation text cannot be empty")
-				);
+				return sink.error(new Error("Operation text cannot be empty"));
 			}
 
 			return subscriptionClient.subscribe(
@@ -108,20 +105,12 @@ function createNetwork() {
 						if (err instanceof CloseEvent) {
 							return sink.error(
 								// reason will be available on clean closes
-								new Error(
-									`Socket closed with event ${err.code} ${
-										err.reason || ""
-									}`
-								)
+								new Error(`Socket closed with event ${err.code} ${err.reason || ""}`)
 							);
 						}
 
 						return sink.error(
-							new Error(
-								(err as any)
-									.map((err: any) => err.message)
-									.join(", ")
-							)
+							new Error((err as any).map((err: any) => err.message).join(", "))
 						);
 					},
 				}

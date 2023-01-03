@@ -8,6 +8,7 @@ import useSerializablePreloadedQuery from "../src/relay/useSerializablePreloaded
 import MainViewQueryNode, {
 	MainViewQuery,
 } from "../__generated__/MainViewQuery.graphql";
+import Loading from "./loading";
 
 interface Props {
 	preloadedQuery: SerializablePreloadedQuery<
@@ -22,7 +23,7 @@ function ClientView({ preloadedQuery }: Props) {
 
 	return (
 		<RelayEnvironmentProvider environment={environment}>
-			<Suspense fallback={"Loading..."}>
+			<Suspense fallback={<Loading />}>
 				<MainView queryRef={queryRef} />
 			</Suspense>
 		</RelayEnvironmentProvider>
