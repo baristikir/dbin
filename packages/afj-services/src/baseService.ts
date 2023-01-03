@@ -1,13 +1,14 @@
 import { Agent } from "@aries-framework/core";
 
+type TempAgent = Agent<{}>;
 interface WithAgent {
-	agent: Agent;
+	agent: TempAgent;
 }
 
 export class ServiceWithAgent implements WithAgent {
-	agent: Agent;
+	agent: TempAgent;
 
-	constructor(agent: Agent) {
+	constructor(agent: TempAgent) {
 		this.agent = agent;
 	}
 }

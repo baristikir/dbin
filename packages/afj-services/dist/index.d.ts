@@ -25,7 +25,7 @@ interface CreateAgentProps {
     config: InitConfig;
     indyLedgers: IndyLedgerConfig[];
 }
-declare function createAgent({ config, indyLedgers }: CreateAgentProps): Promise<Agent<any>>;
+declare function createAgent({ config, indyLedgers }: CreateAgentProps): Promise<Agent<{}>>;
 
 declare const agentConfigs_createAgentConfig: typeof createAgentConfig;
 declare const agentConfigs_createAgent: typeof createAgent;

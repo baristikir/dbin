@@ -261,9 +261,7 @@ builder.mutationField(
 
 // src/graphql/resolvers/credentialResolver.ts
 var import_afj_services2 = require("@dbin/afj-services");
-var CredentialObjectRef = builder.objectRef(
-  "Credential"
-);
+var CredentialObjectRef = builder.objectRef("Credential");
 CredentialObjectRef.implement({
   fields: (t) => ({
     id: t.exposeString("id"),
@@ -284,7 +282,6 @@ builder.queryField(
     resolve: async (_root, {}, { agent: agent2 }) => {
       const credentialService = new import_afj_services2.CredentialService(agent2);
       const credentials = await credentialService.allCredentials();
-      console.log({ credentials });
       return credentials;
     }
   })
@@ -395,9 +392,7 @@ async function initServer(port2) {
       }
     ]
   });
-  agent.registerOutboundTransport(
-    new import_core2.HttpOutboundTransport()
-  );
+  agent.registerOutboundTransport(new import_core2.HttpOutboundTransport());
   const inboundTransporter = new import_node2.HttpInboundTransport({
     port: port2,
     app
@@ -427,14 +422,7 @@ async function initServer(port2) {
         aegnt: getAgent()
       },
       onSubscribe: async (ctx, msg) => {
-        const {
-          schema: schema2,
-          execute,
-          subscribe,
-          contextFactory,
-          parse,
-          validate
-        } = yoga.getEnveloped({
+        const { schema: schema2, execute, subscribe, contextFactory, parse, validate } = yoga.getEnveloped({
           ...ctx,
           req: ctx.extra.request,
           socket: ctx.extra.socket,

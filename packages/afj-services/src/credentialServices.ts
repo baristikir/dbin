@@ -1,8 +1,4 @@
-import {
-	Agent,
-	ConnectionRecord,
-	CredentialState,
-} from "@aries-framework/core";
+import { ConnectionRecord, CredentialState } from "@aries-framework/core";
 import { ServiceWithAgent } from "./baseService";
 
 function convertToCredentialState(state: string): CredentialState {

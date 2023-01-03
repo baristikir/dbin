@@ -3,9 +3,7 @@ import { CredentialService } from "@dbin/afj-services";
 import { builder } from "../builder";
 
 const CredentialObjectRef =
-	builder.objectRef<GraphQLObjects.CredentialObjectType>(
-		"Credential"
-	);
+	builder.objectRef<GraphQLObjects.CredentialObjectType>("Credential");
 CredentialObjectRef.implement({
 	fields: (t) => ({
 		id: t.exposeString("id"),
@@ -25,10 +23,7 @@ builder.queryField("credentials", (t) =>
 		args: {},
 		resolve: async (_root, {}, { agent }) => {
 			const credentialService = new CredentialService(agent!);
-			const credentials =
-				await credentialService.allCredentials();
-
-			console.log({ credentials });
+			const credentials = await credentialService.allCredentials();
 
 			return credentials;
 		},

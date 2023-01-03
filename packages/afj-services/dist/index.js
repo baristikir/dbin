@@ -99,7 +99,8 @@ async function createAgent({ config, indyLedgers }) {
         ...ledger
       }))
     },
-    dependencies: import_node.agentDependencies
+    dependencies: import_node.agentDependencies,
+    modules: {}
   });
   return agent;
 }

@@ -73,6 +73,10 @@ export async function createAgent({ config, indyLedgers }: CreateAgentProps) {
 			})),
 		},
 		dependencies: agentDependencies,
+		// Temporary fix for `Agent` types.
+		// Reported issue
+		//  https://github.com/hyperledger/aries-framework-javascript/issues/1187
+		modules: {},
 	});
 
 	return agent;
