@@ -1,5 +1,5 @@
 import * as _aries_framework_core from '@aries-framework/core';
-import { InitConfig, Agent, ConnectionRecord, OutOfBandRecord, DidExchangeState, HandshakeProtocol } from '@aries-framework/core';
+import { InitConfig, Agent, ConnectionsModule, ConnectionRecord, OutOfBandRecord, DidExchangeState, HandshakeProtocol } from '@aries-framework/core';
 
 declare function fetchGenesisTransaction(ledgerUrl: string): Promise<string>;
 
@@ -26,7 +26,9 @@ interface CreateAgentProps {
     config: InitConfig;
     indyLedgers: IndyLedgerConfig[];
 }
-declare function createAgent({ config, indyLedgers }: CreateAgentProps): Promise<Agent<{}>>;
+declare function createAgent({ config, indyLedgers }: CreateAgentProps): Promise<Agent<{
+    connections: ConnectionsModule;
+}>>;
 
 declare const agentConfigs_createAgentConfig: typeof createAgentConfig;
 declare const agentConfigs_createAgent: typeof createAgent;

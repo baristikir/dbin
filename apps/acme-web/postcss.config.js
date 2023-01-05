@@ -1,6 +1,7 @@
+const config = require("@dbin/ui/tailwind");
 module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}
+	plugins: {
+		tailwindcss: { config },
+		autoprefixer: {},
+	},
+};

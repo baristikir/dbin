@@ -17,6 +17,8 @@ type Connection {
   mediatorId: String
   oobId: String
   protocol: String
+  protocolVersion: String
+  rawState: String!
   role: String!
   state: String!
   theirDid: String

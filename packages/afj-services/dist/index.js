@@ -102,7 +102,11 @@ async function createAgent({ config, indyLedgers }) {
       }))
     },
     dependencies: import_node.agentDependencies,
-    modules: {}
+    modules: {
+      connections: new import_core.ConnectionsModule({
+        autoAcceptConnections: true
+      })
+    }
   });
   return agent;
 }

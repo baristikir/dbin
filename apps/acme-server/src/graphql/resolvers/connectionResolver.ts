@@ -6,7 +6,6 @@ import { builder } from "../builder";
 const ConnectionObjectRef =
 	builder.objectRef<GraphQLObjects.ConnectionObjectType>("Connection");
 
-// TODO Extract into server-lib
 function connectionStateToReadable(state: DidExchangeState) {
 	switch (state) {
 		case DidExchangeState.Completed:
@@ -19,7 +18,7 @@ function connectionStateToReadable(state: DidExchangeState) {
 			return "Unknown";
 	}
 }
-// TODO Extract into server-lib
+
 function getConnectionProtocolVersion(protocol?: string): "v1" | "v2" | null {
 	if (!protocol) return null;
 
@@ -30,17 +29,17 @@ function getConnectionProtocolVersion(protocol?: string): "v1" | "v2" | null {
 		: null;
 }
 
-// TODO Extract field definitions into server-lib
-// https://pothos-graphql.dev/docs/guide/patterns#objects-and-interfaces
 ConnectionObjectRef.implement({
 	fields: (t) => ({
 		id: t.exposeString("id", {
 			description: "Connection Record ID, often known as connectionId",
 		}),
 		type: t.exposeString("type"),
-		rawState: t.exposeString("state"),
 		state: t.string({
 			resolve: (connection) => connectionStateToReadable(connection.state),
+		}),
+		isStateCompleted: t.boolean({
+			resolve: (connection) => connection.state === DidExchangeState.Completed,
 		}),
 		role: t.exposeString("role"),
 		did: t.exposeString("did", { nullable: true }),
@@ -77,70 +76,47 @@ ConnectionObjectRef.implement({
 	}),
 });
 
-const ConnectionsFilterInput = builder.inputType("ConnectionsFilterInput", {
-	fields: (t) => ({
-		state: t.string({ required: false }),
-		theirDid: t.string({ required: false }),
-		theirLabel: t.string({ required: false }),
-		protocol: t.string({ required: false }),
-		isReady: t.boolean({ required: false }),
-		isRequester: t.boolean({ required: false }),
-	}),
-});
 builder.queryField("connections", (t) =>
 	t.field({
 		type: [ConnectionObjectRef],
+		resolve: async (_root, _args, { agent }) => {
+			const connectionService = new ConnectionService(agent);
+			const connections = await connectionService.allConnections();
+
+			return connections;
+		},
+	})
+);
+
+const ConnectWithAgentInput = builder.inputType("ConnectWithAgentInput", {
+	fields: (t) => ({
+		url: t.string(),
+	}),
+});
+builder.mutationField("acceptInvitation", (t) =>
+	t.field({
+		type: "Boolean",
 		args: {
-			filter: t.arg({
-				type: ConnectionsFilterInput,
-				required: false,
+			input: t.arg({
+				type: ConnectWithAgentInput,
 			}),
 		},
-		resolve: async (_root, { filter }, { agent }) => {
-			const connectionServices = new ConnectionService(agent);
-			return await connectionServices.allConnections({
-				...(filter as {}),
-			});
-		},
-	})
-);
-
-builder.queryField("connection", (t) =>
-	t.field({
-		type: ConnectionObjectRef,
-		args: {
-			id: t.arg.string(),
-		},
-		resolve: async (_root, { id }, { agent }) => {
+		resolve: async (_root, { input }, { agent }) => {
 			const connectionService = new ConnectionService(agent);
-			const connection = await connectionService.connectionById(id);
+			const connectionRecord = await connectionService.receiveInvitation(
+				input.url
+			);
 
-			return connection;
-		},
-	})
-);
-
-builder.mutationField("createInvitation", (t) =>
-	t.field({
-		type: "String",
-		resolve: async (_root, _args, { agent }) => {
-			const connectionServices = new ConnectionService(agent);
-			const { invitationUrl, outOfBandRecord } =
-				await connectionServices.createInvitation(
-					"http://localhost:8000/invitation"
-				);
-
-			return invitationUrl;
+			return connectionRecord ? true : false;
 		},
 	})
 );
 
 const RemoveConnectionInput = builder.inputType("RemoveConnectionInput", {
 	fields: (t) => ({
-		connectionId: t.string(),
+		id: t.string(),
 	}),
 });
-
 builder.mutationField("removeConnection", (t) =>
 	t.field({
 		type: "Boolean",
@@ -148,8 +124,9 @@ builder.mutationField("removeConnection", (t) =>
 			input: t.arg({ type: RemoveConnectionInput }),
 		},
 		resolve: async (_root, { input }, { agent }) => {
-			const connectionServices = new ConnectionService(agent);
-			return await connectionServices.removeConnection(input.connectionId);
+			const connectionService = new ConnectionService(agent);
+
+			return await connectionService.removeConnection(input.id);
 		},
 	})
 );

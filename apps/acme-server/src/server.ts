@@ -7,8 +7,6 @@ import {
 	LogLevel,
 } from "@aries-framework/core";
 import { HttpInboundTransport } from "@aries-framework/node";
-import { Server } from "ws";
-import { useServer } from "graphql-ws/lib/use/ws";
 import { AgentConfigServices } from "@dbin/afj-services";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
@@ -35,19 +33,15 @@ export async function initServer(port: number) {
 	//#region Aries Agent Setup
 	// Creating Aries agent config
 	const agentConfig = await AgentConfigServices.createAgentConfig({
-		label: "@dbin/legal-authority-agent",
+		label: "@dbin/acme-agent",
 		walletConfig: {
-			id: "@dbin/legal-authority-wallet",
+			id: "@dbin/acme-wallet",
 			// todo Extract key to environment variable
-			key: "demoagentlegalauthority0000000000000000000",
+			key: "demoagentacme0000000000000000000",
 		},
 		// todo Resolve endpoints by NODE_ENV -> dev | prod
 		endpoints: [`http://localhost:${String(port)}`],
 		logger: new ConsoleLogger(LogLevel.debug),
-		// BC Greenlight Public DID Seed
-		publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED,
-		// VON local devnet Public DID Seed
-		// publicDidSeed: process.env.VON_LOCAL_PUBLIC_DID_SEED,
 	});
 
 	agent = await AgentConfigServices.createAgent({
@@ -81,9 +75,7 @@ export async function initServer(port: number) {
 	const yoga = createYoga({
 		schema,
 		graphqlEndpoint: "/api/graphql",
-		graphiql: {
-			subscriptionsProtocol: "WS",
-		},
+		graphiql: true,
 		landingPage: false,
 		context: ({ request }) => createGraphQLContext(request),
 	});
@@ -92,54 +84,6 @@ export async function initServer(port: number) {
 	//#endregion
 
 	await agent.initialize();
-	const server = inboundTransporter.server;
-
-	//#region Websocket Server Setup
-	const wsServer = new Server({
-		server,
-		path: yoga.graphqlEndpoint,
-	});
-	//#endregion
-
-	//#region Integration of WS Server and GraphQL Server
-	useServer(
-		{
-			execute: (args: any) => args.execute(args),
-			subscribe: (args: any) => args.subscribe(args),
-			context: {
-				aegnt: getAgent(),
-			},
-			onSubscribe: async (ctx, msg) => {
-				const { schema, execute, subscribe, contextFactory, parse, validate } =
-					yoga.getEnveloped({
-						...ctx,
-						req: ctx.extra.request,
-						socket: ctx.extra.socket,
-						params: msg.payload,
-					});
-
-				const args = {
-					schema,
-					operationName: msg.payload.operationName,
-					document: parse(msg.payload.query),
-					variableValues: msg.payload.variables,
-					contextValue: await contextFactory(),
-					execute,
-					subscribe,
-				};
-
-				const errors = validate(args.schema, args.document);
-				if (errors.length) return errors;
-				return args;
-			},
-		},
-		wsServer
-	);
-	//#endregion
-
-	// (await agent.connections.getAll()).forEach(
-	// 	async (connection) => await agent.connections.deleteById(connection.id)
-	// );
 
 	console.log(`[server-log]: server running on ${port}`);
 }

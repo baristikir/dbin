@@ -11,7 +11,7 @@ export default function RootLayout({ children }: Props) {
 			<head />
 			<body className="relative h-full w-full">
 				<ClientSidebar />
-				<div className="relative ml-[30%] h-full min-h-screen w-[70%] bg-white dark:bg-gray-700">
+				<div className="relative ml-[30%] h-full min-h-screen w-[70%]">
 					{children}
 				</div>
 			</body>

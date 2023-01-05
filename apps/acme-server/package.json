@@ -4,21 +4,35 @@
 	"description": "",
 	"main": "src/app.ts",
 	"scripts": {
-		"dev": "ts-node src/app.ts",
-		"build": "tsc",
-		"check": "tsc --pretty --noEmit"
+		"build": "tsup src/app.ts --format cjs",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+		"dev": "tsup src/app.ts --format cjs --watch --onSuccess \"node dist/app.js\"",
+		"lint": "tsc --noEmit && TIMING=1 eslint \"src/**/*.ts*\"",
+		"start": "node dist/app.js",
+		"test": "jest --detectOpenHandles"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
 		"@types/node": "^17.0.12",
+		"dotenv": "^16.0.3",
 		"ts-node": "^10.9.1",
 		"typescript": "^4.9.3"
 	},
 	"dependencies": {
-		"@pothos/core": "^3.23.0",
+		"@aries-framework/core": "^0.3.1",
+		"@aries-framework/node": "^0.3.1",
+		"@dbin/afj-services": "*",
+		"@dbin/server-lib": "*",
+		"@pothos/core": "^3.24.0",
+		"@pothos/plugin-scope-auth": "^3.16.0",
+		"@pothos/plugin-validation": "^3.8.7",
+		"cors": "^2.8.5",
+		"express": "^4.18.2",
 		"graphql": "^16.6.0",
-		"graphql-yoga": "^3.1.0"
+		"graphql-yoga": "^3.1.0",
+		"morgan": "^1.10.0",
+		"ws": "^8.11.0"
 	}
 }

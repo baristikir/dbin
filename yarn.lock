@@ -756,7 +756,7 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.6.tgz#cee20bd55e68a1720bdab363ecf0c821ded4cd45"
   integrity sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==
 
-"@pothos/core@^3.23.0", "@pothos/core@^3.24.0":
+"@pothos/core@^3.24.0":
   version "3.24.0"
   resolved "https://registry.yarnpkg.com/@pothos/core/-/core-3.24.0.tgz#1a555c501c9fc09c588196f83e6b0075571a59c5"
   integrity sha512-LfWzUrmjhg9WQNUntQMJWOfMLb51AMunqBOC66zWEIi2GR4IcAQCPwzy77713Zd/awtIInIuHv4x5/1whAWeeA==
@@ -3413,6 +3413,11 @@ isomorphic-webcrypto@^2.3.8:
     "@unimodules/react-native-adapter" "*"
     expo-random "*"
     react-native-securerandom "^0.1.1"
+
+jotai@^1.12.1:
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.12.1.tgz#18808724c96f8c038f6ee8b75f3ac37e1ac35608"
+  integrity sha512-t6gsYM1WkQHMOazaZYLykCA+fh9KPDGrA+tDYzDeV0268QsCqmX6S4lO46uswgt1LGUeG0EDFGuMd9ac8cWNTA==
 
 joycon@^3.0.1:
   version "3.1.1"

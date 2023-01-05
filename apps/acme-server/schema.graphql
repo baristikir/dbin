@@ -1,0 +1,48 @@
+type Agent {
+  isInitialized: Boolean!
+  label: String!
+}
+
+input ConnectWithAgentInput {
+  url: String!
+}
+
+type Connection {
+  alias: String
+  autoAcceptConnection: Boolean
+  did: String
+  errMessage: String
+
+  """Connection Record ID, often known as connectionId"""
+  id: String!
+  invitationDid: String
+  isReady: Boolean!
+  isRequester: Boolean!
+  isStateCompleted: Boolean!
+  mediatorId: String
+  oobId: String
+  protocol: String
+  protocolVersion: String
+  role: String!
+  state: String!
+  theirDid: String
+  theirLabel: String
+  threadId: String
+  type: String!
+}
+
+scalar DateTime
+
+type Mutation {
+  acceptInvitation(input: ConnectWithAgentInput!): Boolean!
+  removeConnection(input: RemoveConnectionInput!): Boolean!
+}
+
+type Query {
+  agent: Agent!
+  connections: [Connection!]!
+}
+
+input RemoveConnectionInput {
+  id: String!
+}

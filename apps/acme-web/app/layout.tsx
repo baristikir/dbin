@@ -1,4 +1,5 @@
-import "@dbin/ui/styles";
+import "@dbin/ui/styles/globals.css";
+import "../src/styles/styles.css";
 
 export default function RootLayout({
 	children,
@@ -8,7 +9,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<head>
-				<title>Next.js</title>
+				<title>ACME Platform</title>
 			</head>
 			<body>{children}</body>
 		</html>

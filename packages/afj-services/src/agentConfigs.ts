@@ -1,4 +1,9 @@
-import { Agent, InitConfig, IndyPoolConfig } from "@aries-framework/core";
+import {
+	Agent,
+	InitConfig,
+	IndyPoolConfig,
+	ConnectionsModule,
+} from "@aries-framework/core";
 import { agentDependencies } from "@aries-framework/node";
 import { fetchGenesisTransaction } from "./ledgerServices";
 
@@ -78,10 +83,13 @@ export async function createAgent({ config, indyLedgers }: CreateAgentProps) {
 			})),
 		},
 		dependencies: agentDependencies,
-		// Temporary fix for `Agent` types.
 		// Reported issue
 		//  https://github.com/hyperledger/aries-framework-javascript/issues/1187
-		modules: {},
+		modules: {
+			connections: new ConnectionsModule({
+				autoAcceptConnections: true,
+			}),
+		},
 	});
 
 	return agent;

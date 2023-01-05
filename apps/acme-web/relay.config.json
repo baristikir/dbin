@@ -1,0 +1,8 @@
+{
+	"src": "./",
+	"schema": "../acme-server/schema.graphql",
+	"language": "typescript",
+	"artifactDirectory": "__generated__",
+	"excludes": ["**/node_modules/**", "**/.next/**"],
+	"eagerEsModules": true
+}
