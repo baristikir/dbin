@@ -2,7 +2,11 @@ import { DidExchangeState } from "@aries-framework/core";
 import { ConnectionService } from "@dbin/afj-services";
 import { GraphQLObjects } from "@dbin/server-lib";
 import { builder } from "../builder";
-import { CONNECTION_TOPICS } from "../../subscriptions/connectionsTopics";
+import {
+	CONNECTION_CLOSED,
+	CONNECTION_TOPICS,
+} from "../../subscriptions/connectionsTopics";
+import { pubsub } from "../../utils/pubsub";
 
 const ConnectionObjectRef =
 	builder.objectRef<GraphQLObjects.ConnectionObjectType>("Connection");
@@ -154,7 +158,13 @@ builder.mutationField("removeConnection", (t) =>
 		},
 		resolve: async (_root, { input }, { agent }) => {
 			const connectionServices = new ConnectionService(agent);
-			return await connectionServices.removeConnection(input.connectionId);
+			const removeState = await connectionServices.removeConnection(
+				input.connectionId
+			);
+
+			pubsub.publish(CONNECTION_CLOSED);
+
+			return removeState;
 		},
 	})
 );

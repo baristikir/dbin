@@ -1,6 +1,8 @@
 import { Button } from "@dbin/ui";
-import { Info } from "phosphor-react";
-import { graphql, useFragment } from "react-relay";
+import { Info, Trash } from "phosphor-react";
+import { useCallback } from "react";
+import { graphql, useFragment, useMutation } from "react-relay";
+import { ConnectionCardDeleteMutation } from "../../../__generated__/ConnectionCardDeleteMutation.graphql";
 import { ConnectionCard_connection$key } from "../../../__generated__/ConnectionCard_connection.graphql";
 
 interface Props {
@@ -22,10 +24,38 @@ export function ConnectionCard({ queryRef }: Props) {
 		queryRef
 	);
 
+	const [deleteConnection, isInFlight] =
+		useMutation<ConnectionCardDeleteMutation>(
+			graphql`
+				mutation ConnectionCardDeleteMutation($input: RemoveConnectionInput!) {
+					removeConnection(input: $input)
+				}
+			`
+		);
+
+	const handleDeleteConnectionClick = useCallback(() => {
+		deleteConnection({
+			variables: {
+				input: {
+					connectionId: data.id,
+				},
+			},
+		});
+	}, []);
+
 	return (
 		<div className="col-span-1 flex flex-col items-start justify-start gap-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-			<div className="flex w-full items-center justify-end">
-				<Button size="xs" variant="system-contrast">
+			<div className="flex w-full items-center justify-end gap-4">
+				<Button
+					size="xs"
+					variant="transparent-danger"
+					disabled={isInFlight}
+					onClick={handleDeleteConnectionClick}
+				>
+					<p className="text-sm">Delete</p>
+					<Trash className="ml-2 h-4 w-4" />
+				</Button>
+				<Button size="xs" variant="system-contrast" disabled={isInFlight}>
 					<p className="text-sm">Details</p>
 					<Info className="ml-2 h-4 w-4" />
 				</Button>

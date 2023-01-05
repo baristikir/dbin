@@ -455,7 +455,11 @@ builder.mutationField(
     },
     resolve: async (_root, { input }, { agent: agent2 }) => {
       const connectionServices = new import_afj_services.ConnectionService(agent2);
-      return await connectionServices.removeConnection(input.connectionId);
+      const removeState = await connectionServices.removeConnection(
+        input.connectionId
+      );
+      pubsub.publish(CONNECTION_CLOSED);
+      return removeState;
     }
   })
 );
