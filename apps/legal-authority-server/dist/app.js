@@ -458,7 +458,8 @@ builder.mutationField(
       const removeState = await connectionServices.removeConnection(
         input.connectionId
       );
-      pubsub.publish(CONNECTION_CLOSED);
+      if (removeState === true)
+        pubsub.publish(CONNECTION_CLOSED);
       return removeState;
     }
   })
