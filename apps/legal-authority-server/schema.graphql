@@ -69,3 +69,7 @@ type Query {
 input RemoveConnectionInput {
   connectionId: String!
 }
+
+type Subscription {
+  connections(filter: ConnectionsFilterInput): [Connection!]!
+}

@@ -16,7 +16,7 @@ export function ConnectionCard({ queryRef }: Props) {
 				theirLabel
 				state
 				role
-				...ConnectionDetailsModal_connection
+				# ...ConnectionDetailsModal_connection
 			}
 		`,
 		queryRef

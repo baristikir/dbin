@@ -19,6 +19,7 @@
 		"@dbin/afj-services": "*",
 		"@pothos/core": "^3.24.0",
 		"@pothos/plugin-scope-auth": "^3.16.0",
+		"@pothos/plugin-smart-subscriptions": "^3.6.7",
 		"@pothos/plugin-validation": "^3.8.7",
 		"cors": "^2.8.5",
 		"express": "^4.18.2",

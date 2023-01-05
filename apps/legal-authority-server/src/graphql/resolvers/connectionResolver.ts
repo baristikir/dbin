@@ -2,6 +2,7 @@ import { DidExchangeState } from "@aries-framework/core";
 import { ConnectionService } from "@dbin/afj-services";
 import { GraphQLObjects } from "@dbin/server-lib";
 import { builder } from "../builder";
+import { CONNECTION_TOPICS } from "../../subscriptions/connectionsTopics";
 
 const ConnectionObjectRef =
 	builder.objectRef<GraphQLObjects.ConnectionObjectType>("Connection");
@@ -90,6 +91,10 @@ const ConnectionsFilterInput = builder.inputType("ConnectionsFilterInput", {
 builder.queryField("connections", (t) =>
 	t.field({
 		type: [ConnectionObjectRef],
+		smartSubscription: true,
+		subscribe: (subscriptions, _, {}, ctx) => {
+			CONNECTION_TOPICS.forEach((topic) => subscriptions.register(topic));
+		},
 		args: {
 			filter: t.arg({
 				type: ConnectionsFilterInput,

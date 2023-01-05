@@ -1,17 +1,23 @@
 import { Button } from "@dbin/ui";
 import { Plus } from "phosphor-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	graphql,
 	PreloadedQuery,
 	useMutation,
 	usePreloadedQuery,
+	useSubscription,
 } from "react-relay";
 import { ConnectionsViewCreateInvitationMutation } from "../../../__generated__/ConnectionsViewCreateInvitationMutation.graphql";
 import { ConnectionsViewQuery } from "../../../__generated__/ConnectionsViewQuery.graphql";
 import { ConnectionCard } from "./ConnectionCard";
 import { CreateInvitationModal } from "./CreateInvitationModal";
 import { EmptyConnections } from "@dbin/ui";
+import { GraphQLSubscriptionConfig } from "relay-runtime";
+import {
+	ConnectionsViewSubscription,
+	ConnectionsViewSubscription$data,
+} from "../../../__generated__/ConnectionsViewSubscription.graphql";
 
 interface Props {
 	queryRef: PreloadedQuery<ConnectionsViewQuery>;
@@ -29,6 +35,34 @@ export function ConnectionsView({ queryRef }: Props) {
 		`,
 		queryRef
 	);
+
+	const [realtimeData, setRealtimeData] = useState<
+		ConnectionsViewSubscription$data["connections"]
+	>(data.connections ?? []);
+
+	const subscriptionConfig: GraphQLSubscriptionConfig<ConnectionsViewSubscription> =
+		useMemo(
+			() => ({
+				subscription: graphql`
+					subscription ConnectionsViewSubscription {
+						connections {
+							id
+							...ConnectionCard_connection
+						}
+					}
+				`,
+				variables: {},
+				onNext: (response) => {
+					if (!response) return;
+					if (response.connections !== data.connections) {
+						setRealtimeData(response.connections);
+					}
+				},
+			}),
+			[]
+		);
+
+	useSubscription(subscriptionConfig);
 
 	const [invitationUrl, setInvitationUrl] = useState<string>();
 	const [isInvitationOpen, setInvitationOpen] = useState(false);
@@ -67,9 +101,9 @@ export function ConnectionsView({ queryRef }: Props) {
 						<Plus className="ml-2 h-4 w-4" />
 					</Button>
 				</div>
-				{data.connections.length > 0 ? (
+				{realtimeData.length > 0 ? (
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-						{data.connections.map((connection) => (
+						{realtimeData.map((connection) => (
 							<ConnectionCard key={connection.id} queryRef={connection} />
 						))}
 					</div>

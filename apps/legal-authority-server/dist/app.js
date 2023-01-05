@@ -232,7 +232,7 @@ var import_node2 = require("@aries-framework/node");
 var import_ws = require("ws");
 var import_ws2 = require("graphql-ws/lib/use/ws");
 var import_afj_services3 = require("@dbin/afj-services");
-var import_graphql_yoga = require("graphql-yoga");
+var import_graphql_yoga2 = require("graphql-yoga");
 
 // src/graphql/index.ts
 var import_server_lib = __toESM(require_dist());
@@ -241,12 +241,24 @@ var import_server_lib = __toESM(require_dist());
 var import_core = __toESM(require("@pothos/core"));
 var import_plugin_scope_auth = __toESM(require("@pothos/plugin-scope-auth"));
 var import_plugin_validation = __toESM(require("@pothos/plugin-validation"));
+var import_plugin_smart_subscriptions = __toESM(require("@pothos/plugin-smart-subscriptions"));
+
+// src/utils/pubsub.ts
+var import_graphql_yoga = require("graphql-yoga");
+var pubsub = (0, import_graphql_yoga.createPubSub)();
+
+// src/graphql/builder.ts
 var builder = new import_core.default({
   defaultInputFieldRequiredness: true,
-  plugins: [import_plugin_scope_auth.default, import_plugin_validation.default],
+  plugins: [import_plugin_scope_auth.default, import_plugin_validation.default, import_plugin_smart_subscriptions.default],
   authScopes: ({ agent: agent2 }) => ({
     withAgent: !!agent2
-  })
+  }),
+  smartSubscriptions: {
+    ...(0, import_plugin_smart_subscriptions.subscribeOptionsFromIterator)((name, ctx) => {
+      return pubsub.subscribe(name);
+    })
+  }
 });
 builder.queryType({
   authScopes: {
@@ -254,6 +266,11 @@ builder.queryType({
   }
 });
 builder.mutationType({
+  authScopes: {
+    withAgent: true
+  }
+});
+builder.subscriptionType({
   authScopes: {
     withAgent: true
   }
@@ -289,6 +306,20 @@ builder.queryField(
 // src/graphql/resolvers/connectionResolver.ts
 var import_core2 = require("@aries-framework/core");
 var import_afj_services = require("@dbin/afj-services");
+
+// src/subscriptions/connectionsTopics.ts
+var CONNECTION_REQUEST = "connection_request";
+var CONNECTION_ACCEPTED = "connection_accepted";
+var CONNECTION_REJECTED = "connection_rejected";
+var CONNECTION_CLOSED = "connection_closed";
+var CONNECTION_TOPICS = [
+  CONNECTION_REQUEST,
+  CONNECTION_ACCEPTED,
+  CONNECTION_REJECTED,
+  CONNECTION_CLOSED
+];
+
+// src/graphql/resolvers/connectionResolver.ts
 var ConnectionObjectRef = builder.objectRef("Connection");
 function connectionStateToReadable(state) {
   switch (state) {
@@ -365,6 +396,10 @@ builder.queryField(
   "connections",
   (t) => t.field({
     type: [ConnectionObjectRef],
+    smartSubscription: true,
+    subscribe: (subscriptions, _, {}, ctx) => {
+      CONNECTION_TOPICS.forEach((topic) => subscriptions.register(topic));
+    },
     args: {
       filter: t.arg({
         type: ConnectionsFilterInput,
@@ -563,7 +598,7 @@ async function initServer(port2) {
     app
   });
   agent.registerInboundTransport(inboundTransporter);
-  const yoga = (0, import_graphql_yoga.createYoga)({
+  const yoga = (0, import_graphql_yoga2.createYoga)({
     schema,
     graphqlEndpoint: "/api/graphql",
     graphiql: {
@@ -610,7 +645,31 @@ async function initServer(port2) {
     },
     wsServer
   );
+  await registerAgentConnectionListener(agent);
   console.log(`[server-log]: server running on ${port2}`);
+}
+async function registerAgentConnectionListener(agent2) {
+  agent2.events.on(
+    import_core4.ConnectionEventTypes.ConnectionStateChanged,
+    ({ payload, metadata, type }) => {
+      console.log(
+        "[event-listener]: New Connection Response for '@dbin/legal-authority-server' agent."
+      );
+      console.log(
+        `[event-listener]: ConnectionRecord & State: ${payload.connectionRecord.id} ++ ${payload.connectionRecord.state} , previousState: ${payload.previousState}`
+      );
+      switch (payload.connectionRecord.state) {
+        case import_core4.DidExchangeState.Completed:
+          pubsub.publish(CONNECTION_ACCEPTED);
+          break;
+        case import_core4.DidExchangeState.RequestSent:
+          pubsub.publish(CONNECTION_REQUEST);
+          break;
+        default:
+          break;
+      }
+    }
+  );
 }
 
 // src/app.ts

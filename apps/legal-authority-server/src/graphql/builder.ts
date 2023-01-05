@@ -1,7 +1,11 @@
 import SchemaBuilder from "@pothos/core";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import ValidationPlugin from "@pothos/plugin-validation";
+import SmartSubscription, {
+	subscribeOptionsFromIterator,
+} from "@pothos/plugin-smart-subscriptions";
 import { Agent } from "@aries-framework/core";
+import { pubsub } from "../utils/pubsub";
 
 interface BaseContext {
 	req: Request;
@@ -30,14 +34,18 @@ interface SchemaBuilderTypes {
 // GraphQL library for developing GrahQL schemas,
 // with a code-first approach and focusing on typesafety resulting
 // in better developer experience.
-export const builder =
-	new SchemaBuilder<SchemaBuilderTypes>({
-		defaultInputFieldRequiredness: true,
-		plugins: [ScopeAuthPlugin, ValidationPlugin],
-		authScopes: ({ agent }) => ({
-			withAgent: !!agent,
+export const builder = new SchemaBuilder<SchemaBuilderTypes>({
+	defaultInputFieldRequiredness: true,
+	plugins: [ScopeAuthPlugin, ValidationPlugin, SmartSubscription],
+	authScopes: ({ agent }) => ({
+		withAgent: !!agent,
+	}),
+	smartSubscriptions: {
+		...subscribeOptionsFromIterator((name, ctx) => {
+			return pubsub.subscribe(name);
 		}),
-	});
+	},
+});
 
 // Registering schema types for `Query`, `Mutation` and `Subscription`.
 // Default authentication rule is set to `withAgent`, which means that
@@ -49,6 +57,11 @@ builder.queryType({
 	},
 });
 builder.mutationType({
+	authScopes: {
+		withAgent: true,
+	},
+});
+builder.subscriptionType({
 	authScopes: {
 		withAgent: true,
 	},
