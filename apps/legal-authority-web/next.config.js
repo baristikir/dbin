@@ -9,7 +9,7 @@ const nextConfig = {
 		},
 	},
 	experimental: {
-		appDir: true,
+		// appDir: true,
 		transpilePackages: ["@dbin/ui"],
 	},
 };

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ComponentProps, Fragment } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 export type ButtonOrLinkCompProps = ComponentProps<"button"> &
 	ComponentProps<"a">;
@@ -24,7 +24,8 @@ export function ButtonOrLink({
 	preserveRedirect,
 	...props
 }: ButtonOrLinkProps) {
-	const params = useSearchParams();
+	const router = useRouter();
+	// const params = useSearchParams();
 	const isLink = typeof href !== "undefined";
 	const ButtonOrLink = isLink ? Fragment : "button";
 
@@ -32,8 +33,8 @@ export function ButtonOrLink({
 
 	if (isLink) {
 		const finalHref =
-			preserveRedirect && params.get("redirect")
-				? `${href}?redirect=${encodeURIComponent(String(params.get("redirect")))}`
+			preserveRedirect && router.query.redirect
+				? `${href}?redirect=${encodeURIComponent(String(router.query.redirect))}`
 				: href;
 
 		return (

@@ -1,12 +1,13 @@
-import { graphql, PreloadedQuery, usePreloadedQuery } from "react-relay";
+import { useRouter } from "next/router";
+import { graphql, useLazyLoadQuery } from "react-relay";
 import { ConnectionDetailContent } from "./Content";
 import { ConnectionViewQuery } from "../../../__generated__/ConnectionViewQuery.graphql";
 
-interface Props {
-	queryRef: PreloadedQuery<ConnectionViewQuery>;
-}
-export const ConnectionView = ({ queryRef }: Props) => {
-	const data = usePreloadedQuery(
+interface Props {}
+export const ConnectionView = ({}: Props) => {
+	const router = useRouter();
+	const { connectionId } = router.query;
+	const data = useLazyLoadQuery<ConnectionViewQuery>(
 		graphql`
 			query ConnectionViewQuery($id: String!) {
 				connection(id: $id) {
@@ -14,7 +15,8 @@ export const ConnectionView = ({ queryRef }: Props) => {
 				}
 			}
 		`,
-		queryRef
+		{ id: connectionId as string },
+		{ fetchKey: typeof connectionId === "string" ? connectionId : undefined }
 	);
 
 	return (

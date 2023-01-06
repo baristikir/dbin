@@ -1,9 +1,7 @@
-"use client";
-
 import clsx from "clsx";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 import {
 	Browsers,
 	ListDashes,
@@ -13,28 +11,28 @@ import {
 } from "phosphor-react";
 import { IconButton } from "@dbin/ui";
 
-export function ClientSidebar() {
+export function Sidebar() {
 	const [toggle, setToggle] = useState(false);
 	const handleToggleMenuClick = useCallback(() => {
 		setToggle(!toggle);
 	}, [toggle]);
 
 	return (
-		<div className="fixed flex h-12 w-full flex-col items-center justify-between bg-black xl:h-screen xl:w-[30%]">
-			<header className="flex w-full items-center justify-between place-self-start px-8 py-4">
+		<div className="fixed flex h-16 w-full flex-col items-center justify-between bg-black lg:h-screen lg:w-[30%]">
+			<header className="flex w-full items-center justify-between px-8 lg:place-self-start lg:py-4">
 				<h3 className="text-sm font-medium text-white">
 					Decentralized Business Identity (DBIN)
 				</h3>
 
-				<div className="">
+				<div className="block lg:hidden">
 					<IconButton
-						variant="default"
+						variant="danger"
 						onClick={handleToggleMenuClick}
 						icon={<ListDashes className="h-5 w-5" />}
 					/>
 				</div>
 			</header>
-			<nav className="flex w-64 flex-col gap-2">
+			<nav className={clsx("w-full flex-col gap-2 lg:w-64")}>
 				<h6 className="text-lg font-medium text-white">Navigation</h6>
 				<NavigationLink href="/">
 					{(state) => (
@@ -58,14 +56,14 @@ export function ClientSidebar() {
 						</>
 					)}
 				</NavigationLink>
-				<NavigationLink href="/credentials">
+				<NavigationLink href="/credentials-schemas">
 					{(state) => (
 						<>
 							<ShieldCheck
 								weight={state === true ? "duotone" : "regular"}
 								className="mr-4 h-5 w-5"
 							/>
-							<p>Credentials</p>
+							<p>Credentials Schemas</p>
 						</>
 					)}
 				</NavigationLink>
@@ -96,7 +94,8 @@ const NavigationLink = ({
 	additionalKeys,
 	children,
 }: NavigationLinkProps) => {
-	const pathname = usePathname();
+	const router = useRouter();
+	const { pathname } = router;
 
 	const state: boolean = useMemo(() => {
 		if (!pathname) {

@@ -3,9 +3,8 @@ import { Plus } from "phosphor-react";
 import { useMemo, useState } from "react";
 import {
 	graphql,
-	PreloadedQuery,
+	useLazyLoadQuery,
 	useMutation,
-	usePreloadedQuery,
 	useSubscription,
 } from "react-relay";
 import { ConnectionsViewCreateInvitationMutation } from "../../../__generated__/ConnectionsViewCreateInvitationMutation.graphql";
@@ -20,11 +19,12 @@ import {
 } from "../../../__generated__/ConnectionsViewSubscription.graphql";
 
 interface Props {
-	queryRef: PreloadedQuery<ConnectionsViewQuery>;
+	// Server-Side Preloaded Query
+	// queryRef: PreloadedQuery<ConnectionsViewQuery>;
 }
 
-export function ConnectionsView({ queryRef }: Props) {
-	const data = usePreloadedQuery(
+export function ConnectionsView({}: Props) {
+	const data = useLazyLoadQuery<ConnectionsViewQuery>(
 		graphql`
 			query ConnectionsViewQuery {
 				connections {
@@ -33,7 +33,7 @@ export function ConnectionsView({ queryRef }: Props) {
 				}
 			}
 		`,
-		queryRef
+		{}
 	);
 
 	const [realtimeData, setRealtimeData] = useState<
