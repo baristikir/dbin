@@ -47,6 +47,9 @@ ConnectionObjectRef.implement({
 		state: t.string({
 			resolve: (connection) => connectionStateToReadable(connection.state),
 		}),
+		rand: t.int({
+			resolve: () => Math.floor(new Date().getTime() / 1000),
+		}),
 		role: t.exposeString("role"),
 		did: t.exposeString("did", { nullable: true }),
 		alias: t.exposeString("alias", { nullable: true }),

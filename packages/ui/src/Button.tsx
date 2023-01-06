@@ -12,7 +12,7 @@ export interface ButtonProps extends ButtonOrLinkProps {
 		| "transparent-danger"
 		| "system-contrast"
 		| "dashed";
-	size?: "xxs" | "xs" | "base" | "xl";
+	size?: "xs" | "sm" | "base" | "xl";
 	underline?: boolean;
 	withFullWidth?: boolean;
 }
@@ -31,9 +31,9 @@ export function Button({
 			className={clsx(
 				"z-20 flex items-center justify-center whitespace-nowrap rounded-lg border font-medium transition-colors duration-100 hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white disabled:pointer-events-none disabled:opacity-60 dark:focus:ring-offset-black",
 				{
-					"px-2 py-1 text-xs": size === "xxs",
-					"px-4 py-1 text-sm xl:py-2": size === "xs",
-					"px-6 py-2 text-base": size === "base",
+					"px-3 py-1 text-xs": size === "xs",
+					"px-4 py-2 text-sm": size === "sm",
+					"px-5 py-2 text-base": size === "base",
 					"px-6 py-2.5 text-base": size === "xl",
 				},
 				{ "w-full": withFullWidth },

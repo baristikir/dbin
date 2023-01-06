@@ -3,6 +3,7 @@ import ClientView from "./ClientView";
 import MainViewQueryNode, {
 	MainViewQuery,
 } from "../__generated__/MainViewQuery.graphql";
+import { Suspense } from "react";
 
 export default async function Page() {
 	const preloadedQuery = await loadSerializableQuery<
@@ -10,5 +11,9 @@ export default async function Page() {
 		MainViewQuery
 	>(MainViewQueryNode.params, {});
 
-	return <ClientView preloadedQuery={preloadedQuery} />;
+	return (
+		<Suspense fallback="LOADING..">
+			<ClientView preloadedQuery={preloadedQuery} />
+		</Suspense>
+	);
 }

@@ -10,5 +10,7 @@ export default async function Page() {
 		ConnectionsViewQuery
 	>(ConnectionsViewQueryNode.params, {});
 
+	console.log("connections/page.tsx");
+
 	return <ClientView preloadedQuery={preloadedQuery} />;
 }

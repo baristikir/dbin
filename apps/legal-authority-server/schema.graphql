@@ -18,6 +18,7 @@ type Connection {
   oobId: String
   protocol: String
   protocolVersion: String
+  rand: Int!
   rawState: String!
   role: String!
   state: String!

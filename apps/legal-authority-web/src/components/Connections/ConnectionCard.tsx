@@ -1,4 +1,5 @@
 import { Button } from "@dbin/ui";
+import Link from "next/link";
 import { Info, Trash } from "phosphor-react";
 import { useCallback } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
@@ -55,13 +56,19 @@ export function ConnectionCard({ queryRef }: Props) {
 					<p className="text-sm">Delete</p>
 					<Trash className="ml-2 h-4 w-4" />
 				</Button>
-				<Button size="xs" variant="system-contrast" disabled={isInFlight}>
+				<Link
+					href={`/connections/${data.id}`}
+					// size="xs"
+					// variant="system-contrast"
+					// disabled={isInFlight}
+					className="flex items-center"
+				>
 					<p className="text-sm">Details</p>
 					<Info className="ml-2 h-4 w-4" />
-				</Button>
+				</Link>
 			</div>
 			<div className="relative flex w-full flex-col">
-				<p className="text-xs text-gray-500">Agent's Label</p>
+				<p className="text-xs text-gray-500">Agent&rsquo;s Label</p>
 				<div className="">
 					<p className="text-sm font-medium">{data.theirLabel}</p>
 				</div>

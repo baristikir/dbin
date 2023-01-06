@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { ReactNode, useCallback, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { graphql, useFragment, useMutation } from "react-relay";
-import { Button, LoadingSpinner, Modal } from "@dbin/ui";
+import { Button, LoadingSpinner, Modal, GridBaseColumn } from "@dbin/ui";
 import {
 	ArrowClockwise,
 	Check,
@@ -94,39 +94,39 @@ export const ConnectionDetailsModal = ({
 				<div className="flex flex-col gap-y-4 rounded-md bg-gray-50 p-2 dark:bg-gray-700 xl:p-4">
 					<div className="grid grid-cols-2 gap-2">
 						{data.theirLabel && (
-							<Column label="Other Agent's Label">
+							<GridBaseColumn label="Other Agent's Label">
 								<>{data.theirLabel}</>
-							</Column>
+							</GridBaseColumn>
 						)}
-						<Column label="Connection Role">
+						<GridBaseColumn label="Connection Role">
 							<>{data.role}</>
-						</Column>
+						</GridBaseColumn>
 					</div>
 					<div className="grid grid-cols-2 gap-2">
 						{data.protocolVersion && (
-							<Column label="DIDComm Protocol">
+							<GridBaseColumn label="DIDComm Protocol">
 								<>{data.protocolVersion}</>
-							</Column>
+							</GridBaseColumn>
 						)}
 
-						<Column label="State">
+						<GridBaseColumn label="State">
 							<div className="flex items-center gap-2">
 								{(data.isReady === false || data.isStateCompleted === false) && (
 									<LoadingSpinner size="xxs" />
 								)}{" "}
 								{data.state}
 							</div>
-						</Column>
+						</GridBaseColumn>
 					</div>
 					<div className="grid grid-cols-2 gap-2">
 						{data.isReady && (
-							<Column label="Ready for Communication">
+							<GridBaseColumn label="Ready for Communication">
 								<>
 									{data.isReady === true || data.isStateCompleted === true
 										? "Yes"
 										: "No"}
 								</>
-							</Column>
+							</GridBaseColumn>
 						)}
 					</div>
 					<div className="h-0.5 w-full bg-gray-200 dark:bg-gray-600" />
@@ -193,7 +193,7 @@ const ColumnWithInput = ({ children, value }: ColumnWithInputProps) => {
 				<p className="text-sm text-gray-500 dark:text-gray-300">{children}</p>
 				{inputCopied && (
 					<div className="text-radix-blue-11 flex items-center gap-2">
-						<p className="text-sm">URL Copied to Clipboard</p>
+						<p className="text-sm">DID Copied to Clipboard</p>
 						<Check weight="bold" className="h-4 w-4" />
 					</div>
 				)}
@@ -220,22 +220,6 @@ const ColumnWithInput = ({ children, value }: ColumnWithInputProps) => {
 				>
 					<ClipboardIcon className="h-5 w-5" weight="regular" />
 				</button>
-			</div>
-		</div>
-	);
-};
-
-interface ColumnProps {
-	label: string;
-	children: ReactNode;
-}
-const Column = ({ label, children }: ColumnProps) => {
-	return (
-		<div className="col-span-1 flex w-full flex-col">
-			<p className="text-sm text-gray-500 dark:text-gray-300">{label}</p>
-
-			<div className="relative mt-1">
-				<p className={clsx("font-medium")}>{children}</p>
 			</div>
 		</div>
 	);
