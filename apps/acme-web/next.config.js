@@ -1,7 +1,6 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
-	transpilePackages: ["@dbin/ui"],
 	compiler: {
 		relay: {
 			src: "./",
@@ -10,7 +9,7 @@ const nextConfig = {
 		},
 	},
 	experimental: {
-		appDir: true,
+		transpilePackages: ["@dbin/ui"],
 	},
 };
 

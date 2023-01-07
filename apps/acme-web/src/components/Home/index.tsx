@@ -1,20 +1,25 @@
-import {
-	graphql,
-	PreloadedQuery,
-	useLazyLoadQuery,
-	usePreloadedQuery,
-} from "react-relay";
-import { Button, EmptyConnections } from "@dbin/ui";
-import { HomeViewConnectionsQuery } from "../../../__generated__/HomeViewConnectionsQuery.graphql";
-import { ConnectWithAgentModal } from "./ConnectWithAgentModal";
 import { useCallback, useState } from "react";
-import { ConnectionCard } from "./ConnectionCard";
+import { graphql, useLazyLoadQuery } from "react-relay";
 import { atom, useAtom } from "jotai";
-import { homeFetchKeyAtom } from "../../../app/ClientView";
+import { Button, EmptyConnections } from "@dbin/ui";
+import { ConnectionCard } from "./ConnectionCard";
+import { ConnectWithAgentModal } from "./ConnectWithAgentModal";
+import { HomeViewConnectionsQuery } from "../../../__generated__/HomeViewConnectionsQuery.graphql";
 
-interface Props {
-	// queryRef: PreloadedQuery<HomeViewConnectionsQuery>;
-}
+// JSX Component Props
+interface Props {}
+
+// Atomic statemanagement with library called Jotai.
+export const homeFetchKeyAtom = atom<number>(0);
+export const readHomeFetchKeyAtom = atom<number>((get) =>
+	get(homeFetchKeyAtom)
+);
+export const handleHomeFetchKeyUpdateAtom = atom(
+	null,
+	(_, set, update: number) => {
+		set(homeFetchKeyAtom, update);
+	}
+);
 
 export function HomeView({}: Props) {
 	const [fetchKey] = useAtom(homeFetchKeyAtom);

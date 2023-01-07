@@ -9,10 +9,7 @@ import {
 	Clipboard as ClipboardIcon,
 	Trash,
 } from "phosphor-react";
-import {
-	handleHomeFetchKeyUpdateAtom,
-	readHomeFetchKeyAtom,
-} from "../../../app/ClientView";
+import { handleHomeFetchKeyUpdateAtom, readHomeFetchKeyAtom } from "./index";
 import { ConnectionDetailsModal_connection$key } from "../../../__generated__/ConnectionDetailsModal_connection.graphql";
 import { ConnectionDetailsModalDeleteMutation } from "../../../__generated__/ConnectionDetailsModalDeleteMutation.graphql";
 

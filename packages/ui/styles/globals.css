@@ -19,16 +19,16 @@
 	}
 
 	.gridBox-base {
-		@apply h-full px-4 py-6 rounded-xl dark:bg-gray-800 bg-gray-50;
+		@apply h-full rounded-xl bg-gray-50 px-4 py-6 dark:bg-gray-800;
 	}
 	.gridBox-base-inversed {
-		@apply h-full px-4 py-6 bg-gray-700 rounded-xl dark:bg-white;
+		@apply h-full rounded-xl bg-gray-700 px-4 py-6 dark:bg-white;
 	}
 }
 
 @layer base {
 	::selection {
-		@apply text-gray-50 dark:text-gray-900 bg-radix-blue-5;
+		@apply bg-radix-blue-5 text-gray-50 dark:text-gray-900;
 	}
 }
 
@@ -37,7 +37,8 @@
 }
 
 body {
-	@apply antialiased text-gray-900 bg-white dark:bg-gray-900 dark:text-white;
+	font-family: "IBM Plex Sans";
+	@apply bg-white text-gray-900 antialiased dark:bg-gray-900 dark:text-white;
 }
 
 form {
@@ -46,8 +47,8 @@ form {
 
 /* This correctly styles the minimal progress bar that is displayed when navigating between pages */
 #nprogress {
-	@apply z-50 pointer-events-none;
+	@apply pointer-events-none z-50;
 }
 #nprogress .bar {
-	@apply bg-radix-blue-10 fixed z-50 top-0 left-0 w-full h-0.5;
+	@apply bg-radix-blue-10 fixed top-0 left-0 z-50 h-0.5 w-full;
 }

@@ -1,15 +1,9 @@
-import clsx from "clsx";
-import { useRef, useState } from "react";
-import { Check, Clipboard as ClipboardIcon } from "phosphor-react";
-import { Form, Input, Modal, SubmitButton, useZodForm } from "@dbin/ui";
 import { z } from "zod";
-import { graphql, useMutation } from "react-relay";
-import { ConnectWithAgentModalMutation } from "../../../__generated__/ConnectWithAgentModalMutation.graphql";
 import { useAtom } from "jotai";
-import {
-	handleHomeFetchKeyUpdateAtom,
-	readHomeFetchKeyAtom,
-} from "../../../app/ClientView";
+import { graphql, useMutation } from "react-relay";
+import { Form, Input, Modal, SubmitButton, useZodForm } from "@dbin/ui";
+import { handleHomeFetchKeyUpdateAtom, readHomeFetchKeyAtom } from "./index";
+import { ConnectWithAgentModalMutation } from "../../../__generated__/ConnectWithAgentModalMutation.graphql";
 
 const invitationSchema = z.object({
 	url: z.string().url().min(1),
