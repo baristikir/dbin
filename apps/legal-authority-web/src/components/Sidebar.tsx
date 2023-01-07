@@ -18,13 +18,13 @@ export function Sidebar() {
 	}, [toggle]);
 
 	return (
-		<div className="fixed flex h-16 w-full flex-col items-center justify-between bg-black lg:h-screen lg:w-[30%]">
-			<header className="flex w-full items-center justify-between px-8 lg:place-self-start lg:py-4">
+		<div className="fixed flex h-16 w-full flex-col items-center justify-between bg-black md:h-screen md:w-[30%]">
+			<header className="flex w-full items-center justify-between px-8 md:place-self-start md:py-4">
 				<h3 className="text-sm font-medium text-white">
 					Decentralized Business Identity (DBIN)
 				</h3>
 
-				<div className="block lg:hidden">
+				<div className="block md:hidden">
 					<IconButton
 						variant="danger"
 						onClick={handleToggleMenuClick}
@@ -32,7 +32,7 @@ export function Sidebar() {
 					/>
 				</div>
 			</header>
-			<nav className={clsx("w-full flex-col gap-2 lg:w-64")}>
+			<nav className={clsx("w-full flex-col gap-2 md:w-56 lg:w-64")}>
 				<h6 className="text-lg font-medium text-white">Navigation</h6>
 				<NavigationLink href="/">
 					{(state) => (
