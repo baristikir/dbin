@@ -29,7 +29,7 @@ export function IconButton({
 					"p-1": size === "sm",
 					"p-2": size === "base",
 					"p-3": size === "lg",
-					"border-transparent bg-gray-200/30 hover:bg-gray-300/20 dark:bg-gray-700 dark:hover:bg-gray-600":
+					"border-transparent bg-gray-200 hover:bg-gray-300  dark:bg-gray-600 dark:hover:bg-gray-700":
 						variant === "default",
 					"border-gray-300/20 dark:border-gray-500/40": variant === "border",
 					"border border-gray-200 bg-gray-900 text-gray-50 hover:bg-gray-50 hover:text-gray-900 focus:ring-gray-800 dark:bg-neutral-100 dark:text-gray-900 dark:hover:border-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:ring-gray-700 dark:focus:ring-offset-white":

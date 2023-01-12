@@ -207,14 +207,14 @@ var require_dist = __commonJS({
       writeSchema: () => writeSchema
     });
     var import_node_path = __toESM2(require("path"));
-    var import_node_fs = require("fs");
+    var import_node_fs2 = require("fs");
     var import_graphql2 = require("graphql");
     function writeSchema(schema2, pathTo) {
       const schemaAsString = (0, import_graphql2.printSchema)((0, import_graphql2.lexicographicSortSchema)(schema2));
       const schemaPath = import_node_path.default.join(process.cwd(), pathTo);
-      const existingSchema = (0, import_node_fs.existsSync)(schemaPath) && (0, import_node_fs.readFileSync)(schemaPath, "utf-8");
+      const existingSchema = (0, import_node_fs2.existsSync)(schemaPath) && (0, import_node_fs2.readFileSync)(schemaPath, "utf-8");
       if (existingSchema !== schemaAsString) {
-        (0, import_node_fs.writeFileSync)(schemaPath, schemaAsString);
+        (0, import_node_fs2.writeFileSync)(schemaPath, schemaAsString);
       }
     }
     var schemaObjects_exports = {};
@@ -231,7 +231,7 @@ var import_core4 = require("@aries-framework/core");
 var import_node2 = require("@aries-framework/node");
 var import_ws = require("ws");
 var import_ws2 = require("graphql-ws/lib/use/ws");
-var import_afj_services3 = require("@dbin/afj-services");
+var import_afj_services4 = require("@dbin/afj-services");
 var import_graphql_yoga2 = require("graphql-yoga");
 
 // src/graphql/index.ts
@@ -556,6 +556,55 @@ builder.mutationField(
   })
 );
 
+// src/graphql/resolvers/schemaResolver.ts
+var import_afj_services3 = require("@dbin/afj-services");
+
+// src/schemas/index.ts
+var import_node_fs = require("fs");
+
+// src/schemas/schema.json
+var schema_default = {
+  schemaId: "SYiUQo2fGYKkUqk7evkJT1:2:Conference Ticket:1.0",
+  credentialDefinitionId: "SYiUQo2fGYKkUqk7evkJT1:3:CL:11837:default"
+};
+
+// src/schemas/index.ts
+var schemaId = schema_default.schemaId ?? void 0;
+var credentialDefinitionId = schema_default.credentialDefinitionId ?? void 0;
+function getSchemaId() {
+  return schemaId;
+}
+
+// src/graphql/resolvers/schemaResolver.ts
+var CredentialSchemaRef = builder.objectRef(
+  "CredentialSchema"
+);
+CredentialSchemaRef.implement({
+  fields: (t) => ({
+    id: t.exposeString("id"),
+    seqNo: t.exposeInt("seqNo"),
+    name: t.exposeString("name"),
+    ver: t.exposeString("ver"),
+    version: t.exposeString("version"),
+    attributes: t.exposeStringList("attrNames")
+  })
+});
+builder.queryField(
+  "credentialSchemas",
+  (t) => t.field({
+    type: CredentialSchemaRef,
+    nullable: true,
+    resolve: async (_root, _args, { agent: agent2 }) => {
+      const credentialService = new import_afj_services3.CredentialService(agent2);
+      const schemaId2 = getSchemaId();
+      if (!schemaId2) {
+        return null;
+      }
+      return await credentialService.credentialSchema(schemaId2);
+    }
+  })
+);
+
 // src/graphql/index.ts
 var IS_PRODUCTION = process.env.NODE_ENV === "production";
 var schema = builder.toSchema({});
@@ -579,7 +628,7 @@ function createGraphQLContext(request) {
 async function initServer(port2) {
   const app = (0, import_express.default)();
   app.use((0, import_morgan.default)(":date[iso] :method :url :response-time"));
-  const agentConfig = await import_afj_services3.AgentConfigServices.createAgentConfig({
+  const agentConfig = await import_afj_services4.AgentConfigServices.createAgentConfig({
     label: "@dbin/legal-authority-agent",
     walletConfig: {
       id: "@dbin/legal-authority-wallet",
@@ -589,7 +638,7 @@ async function initServer(port2) {
     logger: new import_core4.ConsoleLogger(import_core4.LogLevel.debug),
     publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED
   });
-  agent = await import_afj_services3.AgentConfigServices.createAgent({
+  agent = await import_afj_services4.AgentConfigServices.createAgent({
     config: agentConfig,
     indyLedgers: [
       {

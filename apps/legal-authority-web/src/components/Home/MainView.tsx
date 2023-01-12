@@ -1,17 +1,7 @@
-import {
-	graphql,
-	PreloadedQuery,
-	useLazyLoadQuery,
-	usePreloadedQuery,
-} from "react-relay";
-// import { AgentStatus } from "./AgentStatus";
-// import { AgentConnections } from "./AgentConnections";
+import { graphql, useLazyLoadQuery } from "react-relay";
 import { MainViewQuery } from "../../../__generated__/MainViewQuery.graphql";
 
-interface Props {
-	// queryRef: PreloadedQuery<MainViewQuery>;
-}
-
+interface Props {}
 export function MainView({}: Props) {
 	const data = useLazyLoadQuery<MainViewQuery>(
 		graphql`
@@ -29,9 +19,7 @@ export function MainView({}: Props) {
 	);
 
 	return (
-		<div className="relative ml-[30%] grid h-full min-h-screen w-[70%] place-items-center">
-			{/* <AgentStatus queryRef={data.agentStatus} />
-			<AgentConnections queryRef={data.connections} /> */}
+		<div className="relative m-0 grid h-full min-h-screen w-full place-items-center md:ml-[30%] md:w-[70%]">
 			<p>{data.agent.label}</p>
 		</div>
 	);

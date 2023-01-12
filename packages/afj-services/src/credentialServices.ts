@@ -20,6 +20,11 @@ export class CredentialService extends ServiceWithAgent {
 		return creds;
 	}
 
+	async credentialSchema(schemaId: string) {
+		const credSchema = await this.agent.ledger.getSchema(schemaId);
+		return credSchema;
+	}
+
 	async credentialByConnection(connectionOrId: ConnectionRecord | string) {
 		let connectionRecord: ConnectionRecord;
 		if (typeof connectionOrId === "string") {

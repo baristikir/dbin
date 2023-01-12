@@ -12,27 +12,31 @@ import {
 import { IconButton } from "@dbin/ui";
 
 export function Sidebar() {
-	const [toggle, setToggle] = useState(false);
-	const handleToggleMenuClick = useCallback(() => {
-		setToggle(!toggle);
-	}, [toggle]);
+	const [isOpen, setIsOpen] = useState(false);
+	const handleToggleMenuClick = useCallback(() => setIsOpen(!isOpen), [isOpen]);
 
 	return (
-		<div className="fixed flex h-16 w-full flex-col items-center justify-between bg-black md:h-screen md:w-[30%]">
-			<header className="flex w-full items-center justify-between px-8 md:place-self-start md:py-4">
+		<div className="relative flex w-full flex-col items-center justify-between bg-black md:fixed md:h-screen md:w-[30%]">
+			<header className="flex w-full items-center justify-between px-8 py-4 md:place-self-start">
 				<h3 className="text-sm font-medium text-white">
 					Decentralized Business Identity (DBIN)
 				</h3>
 
-				<div className="block md:hidden">
+				<div className="md:hidden">
 					<IconButton
-						variant="danger"
+						variant="default"
 						onClick={handleToggleMenuClick}
 						icon={<ListDashes className="h-5 w-5" />}
 					/>
 				</div>
 			</header>
-			<nav className={clsx("w-full flex-col gap-2 md:w-56 lg:w-64")}>
+
+			<nav
+				className={clsx("w-full flex-col gap-2 px-8 py-4 md:w-56 lg:w-64", {
+					"hidden md:block": !isOpen,
+					"flex md:flex": isOpen,
+				})}
+			>
 				<h6 className="text-lg font-medium text-white">Navigation</h6>
 				<NavigationLink href="/">
 					{(state) => (
@@ -79,7 +83,7 @@ export function Sidebar() {
 					)}
 				</NavigationLink>
 			</nav>
-			<footer></footer>
+			<footer>{/** empty */}</footer>
 		</div>
 	);
 }
@@ -97,6 +101,8 @@ const NavigationLink = ({
 	const router = useRouter();
 	const { pathname } = router;
 
+	// Checking if current route matches the navigation,
+	// if yes we will display an selected indicator on the element
 	const state: boolean = useMemo(() => {
 		if (!pathname) {
 			return false;

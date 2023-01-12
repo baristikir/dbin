@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<a1edaac74ec926298af1ea5efa763032>>
+ * @generated SignedSource<<45bc23c49c9fd2c5694c0259e8217f52>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -91,6 +91,13 @@ return {
             "args": null,
             "kind": "ScalarField",
             "name": "state",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "rawState",
             "storageKey": null
           },
           {
@@ -197,12 +204,12 @@ return {
     ]
   },
   "params": {
-    "cacheID": "44032003330190402fefaa921fe45efa",
+    "cacheID": "ce93c3bb0c7172c087873703eed044d6",
     "id": null,
     "metadata": {},
     "name": "ConnectionViewQuery",
     "operationKind": "query",
-    "text": "query ConnectionViewQuery(\n  $id: String!\n) {\n  connection(id: $id) {\n    ...Content_connection\n  }\n}\n\nfragment Content_connection on Connection {\n  id\n  state\n  role\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n  threadId\n  invitationDid\n  oobId\n  mediatorId\n  isReady\n  isRequester\n  autoAcceptConnection\n  errMessage\n}\n"
+    "text": "query ConnectionViewQuery(\n  $id: String!\n) {\n  connection(id: $id) {\n    ...Content_connection\n  }\n}\n\nfragment Content_connection on Connection {\n  id\n  state\n  rawState\n  role\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n  threadId\n  invitationDid\n  oobId\n  mediatorId\n  isReady\n  isRequester\n  autoAcceptConnection\n  errMessage\n}\n"
   }
 };
 })();

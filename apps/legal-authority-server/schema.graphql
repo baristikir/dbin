@@ -46,6 +46,15 @@ type Credential {
   type: String!
 }
 
+type CredentialSchema {
+  attributes: [String!]!
+  id: String!
+  name: String!
+  seqNo: Int!
+  ver: String!
+  version: String!
+}
+
 scalar DateTime
 
 type Did {
@@ -64,6 +73,7 @@ type Query {
   connection(id: String!): Connection!
   connections(filter: ConnectionsFilterInput): [Connection!]!
   credentialByConnection(connectionId: String!): [Credential!]!
+  credentialSchemas: CredentialSchema
   credentials: [Credential!]!
 }
 

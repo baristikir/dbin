@@ -17,6 +17,7 @@ export const ConnectionDetailContent = ({ queryRef }: Props) => {
 			fragment Content_connection on Connection {
 				id
 				state
+				rawState
 				role
 				protocol
 				protocolVersion
@@ -92,23 +93,35 @@ export const ConnectionDetailContent = ({ queryRef }: Props) => {
 
 			<div className="mt-8 flex flex-col">
 				<h3 className="text-xl font-medium">Connection Data</h3>
-				<div className="mt-2 grid w-full grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
+				<div className="mt-2 grid w-full grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
 					<GridBaseColumn label="Other Agent's Label">
 						<p>{data.theirLabel}</p>
 					</GridBaseColumn>
 					<GridBaseColumn label="Connection Role">
-						<p>{data.theirLabel}</p>
+						<p>{data.role}</p>
+					</GridBaseColumn>
+
+					<GridBaseColumn label="State">
+						<div className="flex items-center gap-2">
+							{data.isReady === false && <LoadingSpinner size="xxs" />}{" "}
+							<div>
+								<p>{data.state}</p>
+								<code
+									className="text-radix-red-10 dark:text-radix-red-9 rounded-md bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800"
+									style={{
+										fontFamily: "DejaVu Sans Mono, MonoLisa, Consolas, monospace",
+									}}
+								>
+									protocol state: {data.rawState}
+								</code>
+							</div>
+						</div>
 					</GridBaseColumn>
 
 					<GridBaseColumn label="DIDComm Protocol">
 						<p>{data.protocolVersion}</p>
 					</GridBaseColumn>
-					<GridBaseColumn label="State">
-						<div className="flex items-center gap-2">
-							{data.isReady === false && <LoadingSpinner size="xxs" />}{" "}
-							<p>{data.state}</p>
-						</div>
-					</GridBaseColumn>
+
 					<GridBaseColumn label="Ready for Communication">
 						<p>{data.isReady === true ? "Yes" : "No"}</p>
 					</GridBaseColumn>

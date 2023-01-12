@@ -1,5 +1,6 @@
 import * as _aries_framework_core from '@aries-framework/core';
 import { InitConfig, Agent, ConnectionsModule, ConnectionRecord, OutOfBandRecord, DidExchangeState, HandshakeProtocol } from '@aries-framework/core';
+import * as indy_sdk from 'indy-sdk';
 
 declare function fetchGenesisTransaction(ledgerUrl: string): Promise<string>;
 
@@ -56,6 +57,7 @@ declare class AgentService extends ServiceWithAgent {
 
 declare class CredentialService extends ServiceWithAgent {
     allCredentials(): Promise<_aries_framework_core.CredentialExchangeRecord[]>;
+    credentialSchema(schemaId: string): Promise<indy_sdk.Schema>;
     credentialByConnection(connectionOrId: ConnectionRecord | string): Promise<_aries_framework_core.CredentialExchangeRecord[]>;
 }
 

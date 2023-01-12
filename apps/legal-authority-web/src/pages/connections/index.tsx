@@ -1,17 +1,19 @@
 import { Suspense } from "react";
 import { ConnectionsView } from "../../components/Connections";
+import { Container } from "../../components/Container";
+import { Layout } from "../../components/Layout";
 import { Loading } from "../../components/Loading";
 import { Sidebar } from "../../components/Sidebar";
 
 export default function Page() {
 	return (
-		<div className="relative flex h-full w-full">
+		<Layout>
 			<Sidebar />
 			<Suspense fallback={<Loading />}>
-				<div className="ml-[30%] w-[70%]">
+				<Container>
 					<ConnectionsView />
-				</div>
+				</Container>
 			</Suspense>
-		</div>
+		</Layout>
 	);
 }

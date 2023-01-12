@@ -1,18 +1,20 @@
 import { Suspense } from "react";
+import { Container } from "../../components/Container";
+import { Layout } from "../../components/Layout";
 import { Loading } from "../../components/Loading";
 import { Sidebar } from "../../components/Sidebar";
 
 export default function Page() {
 	return (
-		<div>
+		<Layout>
 			<Sidebar />
 			<Suspense fallback={<Loading />}>
-				<div className="ml-[30%] flex w-[70%]">
+				<Container>
 					<div>
 						<p>Credentials Schemas</p>
 					</div>
-				</div>
+				</Container>
 			</Suspense>
-		</div>
+		</Layout>
 	);
 }

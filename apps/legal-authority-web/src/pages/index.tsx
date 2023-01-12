@@ -1,14 +1,15 @@
 import { Suspense } from "react";
 import { MainView } from "../components/Home/MainView";
+import { Layout } from "../components/Layout";
 import { Sidebar } from "../components/Sidebar";
 
 export default function Page() {
 	return (
-		<div className="relative flex h-full w-full">
+		<Layout>
 			<Sidebar />
 			<Suspense fallback="LOADING..">
 				<MainView />
 			</Suspense>
-		</div>
+		</Layout>
 	);
 }

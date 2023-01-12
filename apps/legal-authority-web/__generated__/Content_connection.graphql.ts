@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<bb1d99043feeecd698b9f185cab2b57e>>
+ * @generated SignedSource<<ee646b1ae538cc50883d738dc600561d>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -22,6 +22,7 @@ export type Content_connection$data = {
   readonly oobId: string | null;
   readonly protocol: string | null;
   readonly protocolVersion: string | null;
+  readonly rawState: string;
   readonly role: string;
   readonly state: string;
   readonly theirDid: string | null;
@@ -52,6 +53,13 @@ const node: ReaderFragment = {
       "args": null,
       "kind": "ScalarField",
       "name": "state",
+      "storageKey": null
+    },
+    {
+      "alias": null,
+      "args": null,
+      "kind": "ScalarField",
+      "name": "rawState",
       "storageKey": null
     },
     {
@@ -157,6 +165,6 @@ const node: ReaderFragment = {
   "abstractKey": null
 };
 
-(node as any).hash = "0b9f498a900f2bbfc9d7643a5aed5dcb";
+(node as any).hash = "632a7b2492fdb47088bd9552d4604921";
 
 export default node;

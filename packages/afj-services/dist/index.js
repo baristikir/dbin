@@ -136,6 +136,10 @@ var CredentialService = class extends ServiceWithAgent {
     const creds = await this.agent.credentials.getAll();
     return creds;
   }
+  async credentialSchema(schemaId) {
+    const credSchema = await this.agent.ledger.getSchema(schemaId);
+    return credSchema;
+  }
   async credentialByConnection(connectionOrId) {
     let connectionRecord;
     if (typeof connectionOrId === "string") {
