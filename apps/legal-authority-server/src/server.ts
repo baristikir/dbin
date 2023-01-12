@@ -46,11 +46,9 @@ export async function initServer(port: number) {
 		label: "@dbin/legal-authority-agent",
 		walletConfig: {
 			id: "@dbin/legal-authority-wallet",
-			// todo Extract key to environment variable
-			key: "demoagentlegalauthority0000000000000000000",
+			key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforlegal0000000",
 		},
-		// todo Resolve endpoints by NODE_ENV -> dev | prod
-		endpoints: [`http://localhost:${String(port)}`],
+		endpoints: AgentConfigServices.resolveEndpointsByEnvironment({ port }),
 		logger: new ConsoleLogger(LogLevel.debug),
 		// BC Greenlight Public DID Seed
 		publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED,

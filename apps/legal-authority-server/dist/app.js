@@ -632,9 +632,9 @@ async function initServer(port2) {
     label: "@dbin/legal-authority-agent",
     walletConfig: {
       id: "@dbin/legal-authority-wallet",
-      key: "demoagentlegalauthority0000000000000000000"
+      key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforlegal0000000"
     },
-    endpoints: [`http://localhost:${String(port2)}`],
+    endpoints: import_afj_services4.AgentConfigServices.resolveEndpointsByEnvironment({ port: port2 }),
     logger: new import_core4.ConsoleLogger(import_core4.LogLevel.debug),
     publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED
   });

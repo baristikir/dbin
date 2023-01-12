@@ -51,10 +51,17 @@ async function fetchGenesisTransaction(ledgerUrl) {
 var agentConfigs_exports = {};
 __export(agentConfigs_exports, {
   createAgent: () => createAgent,
-  createAgentConfig: () => createAgentConfig
+  createAgentConfig: () => createAgentConfig,
+  resolveEndpointsByEnvironment: () => resolveEndpointsByEnvironment
 });
 var import_core = require("@aries-framework/core");
 var import_node = require("@aries-framework/node");
+function resolveEndpointsByEnvironment({
+  port,
+  publicIpOrDomain
+}) {
+  return process.env.NODE_ENV === "production" ? publicIpOrDomain ? [`${publicIpOrDomain}:${port}`] : [] : [`http://localhost:${port}`];
+}
 async function createAgentConfig({ ...args }) {
   console.log("[agent.config] Creating Agent Config..");
   const config = {

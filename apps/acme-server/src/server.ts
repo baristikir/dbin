@@ -11,6 +11,7 @@ import { AgentConfigServices } from "@dbin/afj-services";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
 import { Context } from "./graphql/builder";
+import { resolveEndpointsByEnvironment } from "@dbin/afj-services/src/agentConfigs";
 
 let agent: Agent;
 export function getAgent() {
@@ -36,11 +37,12 @@ export async function initServer(port: number) {
 		label: "@dbin/acme-agent",
 		walletConfig: {
 			id: "@dbin/acme-wallet",
-			// todo Extract key to environment variable
-			key: "demoagentacme0000000000000000000",
+			key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforacme00000000",
 		},
-		// todo Resolve endpoints by NODE_ENV -> dev | prod
-		endpoints: [`http://localhost:${String(port)}`],
+		endpoints: AgentConfigServices.resolveEndpointsByEnvironment({
+			port,
+			publicIpOrDomain: process.env.PUBLIC_IP_ADRESS,
+		}),
 		logger: new ConsoleLogger(LogLevel.debug),
 	});
 

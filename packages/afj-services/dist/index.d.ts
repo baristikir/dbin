@@ -11,6 +11,10 @@ declare namespace ledgerServices {
   };
 }
 
+declare function resolveEndpointsByEnvironment({ port, publicIpOrDomain, }: {
+    port: number;
+    publicIpOrDomain?: string;
+}): string[];
 interface RequiredAgentConfig extends InitConfig {
     walletConfig: InitConfig["walletConfig"];
 }
@@ -31,10 +35,12 @@ declare function createAgent({ config, indyLedgers }: CreateAgentProps): Promise
     connections: ConnectionsModule;
 }>>;
 
+declare const agentConfigs_resolveEndpointsByEnvironment: typeof resolveEndpointsByEnvironment;
 declare const agentConfigs_createAgentConfig: typeof createAgentConfig;
 declare const agentConfigs_createAgent: typeof createAgent;
 declare namespace agentConfigs {
   export {
+    agentConfigs_resolveEndpointsByEnvironment as resolveEndpointsByEnvironment,
     agentConfigs_createAgentConfig as createAgentConfig,
     agentConfigs_createAgent as createAgent,
   };

@@ -7,6 +7,20 @@ import {
 import { agentDependencies } from "@aries-framework/node";
 import { fetchGenesisTransaction } from "./ledgerServices";
 
+export function resolveEndpointsByEnvironment({
+	port,
+	publicIpOrDomain,
+}: {
+	port: number;
+	publicIpOrDomain?: string;
+}): string[] {
+	return process.env.NODE_ENV === "production"
+		? publicIpOrDomain
+			? [`${publicIpOrDomain}:${port}`]
+			: []
+		: [`http://localhost:${port}`];
+}
+
 interface RequiredAgentConfig extends InitConfig {
 	walletConfig: InitConfig["walletConfig"];
 }
