@@ -32,7 +32,7 @@ export function Sidebar() {
 			</header>
 
 			<nav
-				className={clsx("w-full flex-col gap-2 px-8 py-4 md:w-56 lg:w-64", {
+				className={clsx("w-full flex-col gap-2 px-8 py-4 md:w-64 lg:w-72", {
 					"hidden md:block": !isOpen,
 					"flex md:flex": isOpen,
 				})}
