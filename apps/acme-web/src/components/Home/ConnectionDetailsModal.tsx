@@ -206,7 +206,7 @@ const ColumnWithInput = ({ children, value }: ColumnWithInputProps) => {
 					className={clsx(
 						"border border-gray-300/50 bg-white text-sm font-normal text-black placeholder:text-gray-400/50 placeholder-shown:text-opacity-25 focus:bg-gray-50 dark:border-gray-500/40 dark:bg-gray-800 dark:text-white dark:focus:bg-gray-800",
 						"focus:ring-radix-blue-8/20 focus:border-radix-blue-8 relative z-40 w-full appearance-none rounded-lg outline-none transition duration-300 focus:ring",
-						"px-4 py-3",
+						"py-3 pl-4 pr-12",
 						"disabled:bg-gray-500/20 disabled:opacity-60"
 					)}
 				/>
