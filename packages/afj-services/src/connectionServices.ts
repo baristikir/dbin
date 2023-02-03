@@ -23,13 +23,11 @@ export class ConnectionService extends ServiceWithAgent {
 		outOfBandRecord: OutOfBandRecord;
 		invitationUrl: string;
 	}> {
-		const outOfBandRecord =
-			await this.agent.oob.createInvitation();
+		const outOfBandRecord = await this.agent.oob.createInvitation();
 
-		const invitationUrl =
-			outOfBandRecord.outOfBandInvitation.toUrl({
-				domain: domainUrl,
-			});
+		const invitationUrl = outOfBandRecord.outOfBandInvitation.toUrl({
+			domain: domainUrl,
+		});
 
 		return {
 			outOfBandRecord,
@@ -42,41 +40,34 @@ export class ConnectionService extends ServiceWithAgent {
 	// If `autoAcceptConnections` is set to `true` on the agents config,
 	// then the connection will be established by this function and the agent isn't requiring an explicit accept of the invitation.
 	async receiveInvitation(invitationUrl: string) {
-		const { connectionRecord } =
-			await this.agent.oob.receiveInvitationFromUrl(
-				invitationUrl
-			);
+		const { connectionRecord } = await this.agent.oob.receiveInvitationFromUrl(
+			invitationUrl
+		);
 
 		return connectionRecord;
 	}
 
 	// Explicitly accept an invitation from an aries agent.
 	async accpetInvitation(invitationUrl: string) {
-		const { outOfBandRecord } =
-			await this.agent.oob.receiveInvitationFromUrl(
-				invitationUrl
-			);
-		const { connectionRecord } =
-			await this.agent.oob.acceptInvitation(
-				outOfBandRecord.id,
-				{}
-			);
+		const { outOfBandRecord } = await this.agent.oob.receiveInvitationFromUrl(
+			invitationUrl
+		);
+		const { connectionRecord } = await this.agent.oob.acceptInvitation(
+			outOfBandRecord.id,
+			{}
+		);
 
 		return connectionRecord;
 	}
 
 	// Retrieve all established connections with the agent.
 	async allConnections(filter?: ConnectionQueryFilter) {
-		const connectionRecords =
-			await this.agent.connections.getAll();
+		const connectionRecords = await this.agent.connections.getAll();
 
 		if (filter) {
 			return connectionRecords.filter((connectionRecord) => {
 				for (const key in filter) {
-					if (
-						filter[key] === undefined ||
-						filter[key] !== connectionRecord[key]
-					)
+					if (filter[key] === undefined || filter[key] !== connectionRecord[key])
 						return false;
 				}
 
@@ -88,24 +79,16 @@ export class ConnectionService extends ServiceWithAgent {
 	}
 
 	// Retrieve specific connection with the agent, queried by it's ID.
-	async connectionById(
-		connectionId: string,
-		filter?: ConnectionQueryFilter
-	) {
-		const connectionRecord =
-			await this.agent.connections.findById(connectionId);
+	async connectionById(connectionId: string, filter?: ConnectionQueryFilter) {
+		const connectionRecord = await this.agent.connections.findById(connectionId);
 
 		return connectionRecord;
 	}
 
-	async removeConnection(
-		connectionOrId: ConnectionRecord | string
-	) {
+	async removeConnection(connectionOrId: ConnectionRecord | string) {
 		let connectionRecord: ConnectionRecord;
 		if (typeof connectionOrId === "string") {
-			connectionRecord = await this.agent.connections.findById(
-				connectionOrId
-			);
+			connectionRecord = await this.agent.connections.findById(connectionOrId);
 
 			if (connectionRecord === null) {
 				console.log(
@@ -119,9 +102,7 @@ export class ConnectionService extends ServiceWithAgent {
 		}
 
 		// Deleting connection record from agent storage
-		await this.agent.connections.deleteById(
-			connectionRecord.id
-		);
+		await this.agent.connections.deleteById(connectionRecord.id);
 
 		return true;
 	}

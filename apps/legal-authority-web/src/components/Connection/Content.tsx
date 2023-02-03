@@ -1,8 +1,14 @@
 import clsx from "clsx";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { ReactNode, useCallback, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
-import { Check, Key, Trash, Clipboard as ClipboardIcon } from "phosphor-react";
+import {
+	Check,
+	Key,
+	Trash,
+	Clipboard as ClipboardIcon,
+	ArrowLeft,
+} from "phosphor-react";
 import { Button, GridBaseColumn, LoadingSpinner } from "@dbin/ui";
 import { ContentConnectionDeleteMutation } from "../../../__generated__/ContentConnectionDeleteMutation.graphql";
 import { Content_connection$key } from "../../../__generated__/Content_connection.graphql";
@@ -61,12 +67,26 @@ export const ConnectionDetailContent = ({ queryRef }: Props) => {
 		});
 	}, []);
 
-	const handleIssueCredentialClick = useCallback(() => {
-		console.log("todo:issue credentials");
-	}, [data]);
+	const handleIssueCredentialClick = () => {
+		router.push(String(`${router.asPath}/issue-credential`));
+	};
+
+	const handleBackToConnections = () => {
+		router.push("/connections");
+	};
 
 	return (
 		<div className="flex flex-col">
+			<div className="my-2 -ml-2">
+				<button
+					type="button"
+					onClick={handleBackToConnections}
+					className="relative flex flex-shrink-0 items-center justify-center gap-2 rounded-md bg-transparent px-3 py-1 font-medium transition-colors duration-100 hover:bg-gray-50"
+				>
+					<ArrowLeft weight="bold" className="h-4 w-4" />
+					<p>Back</p>
+				</button>
+			</div>
 			<div className="flex w-full flex-col items-stretch justify-start gap-2 2xl:flex-row 2xl:items-center 2xl:justify-between">
 				<h1 className="text-3xl font-medium">Connection Details</h1>
 				<div className="flex items-center gap-4">

@@ -3,3 +3,4 @@ import "./connectionResolver";
 import "./credentialResolver";
 import "./didResolver";
 import "./schemaResolver";
+import "./resultResolver";

@@ -372,12 +372,6 @@ function createGraphQLContext(request) {
     agent: getAgent()
   };
 }
-function resolveEndpointsByEnvironment({
-  port: port2,
-  publicIpOrDomain
-}) {
-  return process.env.NODE_ENV === "production" ? publicIpOrDomain ? [`${publicIpOrDomain}:${port2}`] : [] : [`http://localhost:${port2}`];
-}
 async function initServer(port2) {
   const app = (0, import_express.default)();
   app.use((0, import_morgan.default)(":date[iso] :method :url :response-time"));
@@ -387,7 +381,7 @@ async function initServer(port2) {
       id: "@dbin/acme-wallet",
       key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforacme00000000"
     },
-    endpoints: resolveEndpointsByEnvironment({
+    endpoints: import_afj_services2.AgentConfigServices.resolveEndpointsByEnvironment({
       port: port2,
       publicIpOrDomain: process.env.PUBLIC_IP_ADRESS
     }),

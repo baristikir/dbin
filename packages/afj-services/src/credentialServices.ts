@@ -1,4 +1,8 @@
-import { ConnectionRecord, CredentialState } from "@aries-framework/core";
+import {
+	ConnectionRecord,
+	CredentialPreviewAttributeOptions,
+	CredentialState,
+} from "@aries-framework/core";
 import { ServiceWithAgent } from "./baseService";
 
 function convertToCredentialState(state: string): CredentialState {
@@ -12,6 +16,12 @@ function convertToCredentialState(state: string): CredentialState {
 		case "credential-received":
 			return CredentialState.CredentialReceived;
 	}
+}
+
+interface IssueCredentialProps {
+	attributes: CredentialPreviewAttributeOptions[];
+	credentialDefinitionId: string;
+	protocolVersion?: "v1" | "v2";
 }
 
 export class CredentialService extends ServiceWithAgent {
@@ -35,5 +45,25 @@ export class CredentialService extends ServiceWithAgent {
 
 		const creds = await this.agent.credentials.getAll();
 		return creds;
+	}
+
+	async issueCredential({
+		attributes,
+		protocolVersion = "v2",
+		credentialDefinitionId,
+	}: IssueCredentialProps) {
+		return await this.agent.credentials.createOffer({
+			protocolVersion,
+			credentialFormats: {
+				indy: {
+					credentialDefinitionId,
+					attributes,
+				},
+			},
+		});
+	}
+
+	async revokeCredential({}) {
+		throw new Error("Not implemented yet.");
 	}
 }

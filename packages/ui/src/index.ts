@@ -9,3 +9,5 @@ export * from "./IconButton";
 export * from "./Tooltip";
 export * from "./EmptyConnections";
 export * from "./GridBaseColumn";
+export * from "./ErrorBoundary";
+export * from "./Title";

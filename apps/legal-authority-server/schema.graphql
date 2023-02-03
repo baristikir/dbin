@@ -62,9 +62,20 @@ type Did {
   verkey: String!
 }
 
+input IssueCredentialAttribute {
+  name: String!
+  value: String!
+}
+
+input IssueCredentialInput {
+  attributes: [IssueCredentialAttribute!]!
+  connectionId: String!
+}
+
 type Mutation {
   createDid: Did! @deprecated(reason: "Not compatible with afj-0.3.x version")
   createInvitation: String!
+  issueCredential(input: IssueCredentialInput!): Result!
   removeConnection(input: RemoveConnectionInput!): Boolean!
 }
 
@@ -79,6 +90,16 @@ type Query {
 
 input RemoveConnectionInput {
   connectionId: String!
+}
+
+type Result {
+  payload: String!
+  status: ResultStatus!
+}
+
+enum ResultStatus {
+  FAILED
+  SUCCESS
 }
 
 type Subscription {

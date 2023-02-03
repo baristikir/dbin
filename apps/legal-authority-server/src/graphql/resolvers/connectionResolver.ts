@@ -1,5 +1,5 @@
 import { DidExchangeState } from "@aries-framework/core";
-import { ConnectionService } from "@dbin/afj-services";
+import { ConnectionService, CredentialService } from "@dbin/afj-services";
 import { GraphQLObjects } from "@dbin/server-lib";
 import { builder } from "../builder";
 import {
@@ -7,6 +7,8 @@ import {
 	CONNECTION_TOPICS,
 } from "../../subscriptions/connectionsTopics";
 import { pubsub } from "../../utils/pubsub";
+import { Result, ResultStatus } from "./resultResolver";
+import { getCredentialDefinitionId, getSchemaId } from "../../schemas";
 
 const ConnectionObjectRef =
 	builder.objectRef<GraphQLObjects.ConnectionObjectType>("Connection");
@@ -168,6 +170,62 @@ builder.mutationField("removeConnection", (t) =>
 			if (removeState === true) pubsub.publish(CONNECTION_CLOSED);
 
 			return removeState;
+		},
+	})
+);
+
+// Connection based Credentials
+const IssueCredentialInput = builder.inputType("IssueCredentialInput", {
+	fields: (t) => ({
+		connectionId: t.string(),
+		attributes: t.field({
+			type: [IssueCredentialAttribute],
+		}),
+	}),
+});
+const IssueCredentialAttribute = builder.inputType("IssueCredentialAttribute", {
+	fields: (t) => ({
+		name: t.string(),
+		value: t.string(),
+	}),
+});
+builder.mutationField("issueCredential", (t) =>
+	t.field({
+		type: Result,
+		args: {
+			input: t.arg({ type: IssueCredentialInput }),
+		},
+		resolve: async (_root, { input }, { agent }) => {
+			const connectionService = new ConnectionService(agent);
+			const connectionRecord = await connectionService.connectionById(
+				input.connectionId
+			);
+			if (!connectionRecord) {
+				throw new Error("No such connection found.");
+			}
+
+			const credentialService = new CredentialService(agent);
+			const credentialDefinitionId = getCredentialDefinitionId();
+			if (!credentialDefinitionId) {
+				throw new Error(
+					"Credential Definition not registerde on connected ledger."
+				);
+			}
+
+			const res = await credentialService.issueCredential({
+				protocolVersion: "v2",
+				credentialDefinitionId,
+				attributes: input.attributes,
+			});
+
+			if (!res) {
+				throw new Error("Error while issuing credential");
+			}
+
+			return {
+				status: ResultStatus.SUCCESS,
+				message: "Credential was issued successfully",
+			};
 		},
 	})
 );

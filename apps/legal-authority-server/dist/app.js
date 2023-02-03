@@ -319,6 +319,39 @@ var CONNECTION_TOPICS = [
   CONNECTION_CLOSED
 ];
 
+// src/graphql/resolvers/resultResolver.ts
+var ResultStatus = /* @__PURE__ */ ((ResultStatus2) => {
+  ResultStatus2["SUCCESS"] = "SUCCESS";
+  ResultStatus2["FAILED"] = "FAILED";
+  return ResultStatus2;
+})(ResultStatus || {});
+builder.enumType(ResultStatus, { name: "ResultStatus" });
+var Result = builder.objectRef("Result").implement({
+  fields: (t) => ({
+    status: t.expose("status", { type: ResultStatus }),
+    payload: t.exposeString("message")
+  })
+});
+
+// src/schemas/index.ts
+var import_node_fs = require("fs");
+
+// src/schemas/schema.json
+var schema_default = {
+  schemaId: "SYiUQo2fGYKkUqk7evkJT1:2:Conference Ticket:1.0",
+  credentialDefinitionId: "SYiUQo2fGYKkUqk7evkJT1:3:CL:11837:default"
+};
+
+// src/schemas/index.ts
+var schemaId = schema_default.schemaId ?? void 0;
+var credentialDefinitionId = schema_default.credentialDefinitionId ?? void 0;
+function getSchemaId() {
+  return schemaId;
+}
+function getCredentialDefinitionId() {
+  return credentialDefinitionId;
+}
+
 // src/graphql/resolvers/connectionResolver.ts
 var ConnectionObjectRef = builder.objectRef("Connection");
 function connectionStateToReadable(state) {
@@ -467,6 +500,57 @@ builder.mutationField(
     }
   })
 );
+var IssueCredentialInput = builder.inputType("IssueCredentialInput", {
+  fields: (t) => ({
+    connectionId: t.string(),
+    attributes: t.field({
+      type: [IssueCredentialAttribute]
+    })
+  })
+});
+var IssueCredentialAttribute = builder.inputType("IssueCredentialAttribute", {
+  fields: (t) => ({
+    name: t.string(),
+    value: t.string()
+  })
+});
+builder.mutationField(
+  "issueCredential",
+  (t) => t.field({
+    type: Result,
+    args: {
+      input: t.arg({ type: IssueCredentialInput })
+    },
+    resolve: async (_root, { input }, { agent: agent2 }) => {
+      const connectionService = new import_afj_services.ConnectionService(agent2);
+      const connectionRecord = await connectionService.connectionById(
+        input.connectionId
+      );
+      if (!connectionRecord) {
+        throw new Error("No such connection found.");
+      }
+      const credentialService = new import_afj_services.CredentialService(agent2);
+      const credentialDefinitionId2 = getCredentialDefinitionId();
+      if (!credentialDefinitionId2) {
+        throw new Error(
+          "Credential Definition not registerde on connected ledger."
+        );
+      }
+      const res = await credentialService.issueCredential({
+        protocolVersion: "v2",
+        credentialDefinitionId: credentialDefinitionId2,
+        attributes: input.attributes
+      });
+      if (!res) {
+        throw new Error("Error while issuing credential");
+      }
+      return {
+        status: "SUCCESS" /* SUCCESS */,
+        message: "Credential was issued successfully"
+      };
+    }
+  })
+);
 
 // src/graphql/resolvers/credentialResolver.ts
 var import_afj_services2 = require("@dbin/afj-services");
@@ -558,24 +642,6 @@ builder.mutationField(
 
 // src/graphql/resolvers/schemaResolver.ts
 var import_afj_services3 = require("@dbin/afj-services");
-
-// src/schemas/index.ts
-var import_node_fs = require("fs");
-
-// src/schemas/schema.json
-var schema_default = {
-  schemaId: "SYiUQo2fGYKkUqk7evkJT1:2:Conference Ticket:1.0",
-  credentialDefinitionId: "SYiUQo2fGYKkUqk7evkJT1:3:CL:11837:default"
-};
-
-// src/schemas/index.ts
-var schemaId = schema_default.schemaId ?? void 0;
-var credentialDefinitionId = schema_default.credentialDefinitionId ?? void 0;
-function getSchemaId() {
-  return schemaId;
-}
-
-// src/graphql/resolvers/schemaResolver.ts
 var CredentialSchemaRef = builder.objectRef(
   "CredentialSchema"
 );

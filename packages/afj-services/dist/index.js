@@ -130,7 +130,16 @@ var ServiceWithAgent = class {
 var AgentService = class extends ServiceWithAgent {
   async config() {
   }
-  async issueCredential() {
+  async issueCredential(payload) {
+    this.agent.credentials.createOffer({
+      protocolVersion: "v2",
+      credentialFormats: {
+        indy: {
+          credentialDefinitionId: "",
+          attributes: []
+        }
+      }
+    });
   }
   async requestCredentialProof() {
   }
@@ -156,6 +165,21 @@ var CredentialService = class extends ServiceWithAgent {
     }
     const creds = await this.agent.credentials.getAll();
     return creds;
+  }
+  async issueCredential({
+    attributes,
+    protocolVersion,
+    credentialDefinitionId
+  }) {
+    return await this.agent.credentials.createOffer({
+      protocolVersion,
+      credentialFormats: {
+        indy: {
+          credentialDefinitionId,
+          attributes
+        }
+      }
+    });
   }
 };
 

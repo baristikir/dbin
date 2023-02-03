@@ -1,5 +1,5 @@
 import * as _aries_framework_core from '@aries-framework/core';
-import { InitConfig, Agent, ConnectionsModule, ConnectionRecord, OutOfBandRecord, DidExchangeState, HandshakeProtocol } from '@aries-framework/core';
+import { InitConfig, Agent, ConnectionsModule, ConnectionRecord, CredentialPreviewAttributeOptions, OutOfBandRecord, DidExchangeState, HandshakeProtocol } from '@aries-framework/core';
 import * as indy_sdk from 'indy-sdk';
 
 declare function fetchGenesisTransaction(ledgerUrl: string): Promise<string>;
@@ -57,14 +57,23 @@ declare class ServiceWithAgent implements WithAgent {
 
 declare class AgentService extends ServiceWithAgent {
     config(): Promise<void>;
-    issueCredential(): Promise<void>;
+    issueCredential(payload: any): Promise<void>;
     requestCredentialProof(): Promise<void>;
 }
 
+interface IssueCredentialProps {
+    attributes: CredentialPreviewAttributeOptions[];
+    protocolVersion: "v1" | "v2";
+    credentialDefinitionId: string;
+}
 declare class CredentialService extends ServiceWithAgent {
     allCredentials(): Promise<_aries_framework_core.CredentialExchangeRecord[]>;
     credentialSchema(schemaId: string): Promise<indy_sdk.Schema>;
     credentialByConnection(connectionOrId: ConnectionRecord | string): Promise<_aries_framework_core.CredentialExchangeRecord[]>;
+    issueCredential({ attributes, protocolVersion, credentialDefinitionId, }: IssueCredentialProps): Promise<{
+        message: _aries_framework_core.AgentMessage;
+        credentialRecord: _aries_framework_core.CredentialExchangeRecord;
+    }>;
 }
 
 type Maybe<T> = T | null | undefined;
