@@ -85,6 +85,20 @@ export class ConnectionService extends ServiceWithAgent {
 		return connectionRecord;
 	}
 
+	async hasConnection(connectionId: string): Promise<boolean> {
+		let connectionRecord: ConnectionRecord;
+		try {
+			connectionRecord = await this.agent.connections.findById(connectionId);
+			return true;
+		} catch (error) {
+			console.log(
+				"[ConnectionServices] hasConnection -> No Connection was found. Error:",
+				error
+			);
+			return false;
+		}
+	}
+
 	async removeConnection(connectionOrId: ConnectionRecord | string) {
 		let connectionRecord: ConnectionRecord;
 		if (typeof connectionOrId === "string") {
@@ -98,6 +112,10 @@ export class ConnectionService extends ServiceWithAgent {
 				return false;
 			}
 		} else {
+			const isConnected = await this.hasConnection(connectionOrId.id);
+			if (isConnected === false)
+				throw new Error("Connection not found in Agents Wallet.");
+
 			connectionRecord = connectionOrId;
 		}
 
