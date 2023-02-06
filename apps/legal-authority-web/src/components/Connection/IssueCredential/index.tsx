@@ -1,11 +1,12 @@
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import { Title } from "@dbin/ui";
 import { ArrowLeft } from "phosphor-react";
 import { SelectCredentialTypeToIssue } from "./SelectCredentialType";
 import { IssueBusinessCredentialForm } from "./IssueBusinessCredentialForm";
 import { IssueCredentialConnectionQuery } from "../../../../__generated__/IssueCredentialConnectionQuery.graphql";
+import { IssueCredentialConnectionInfo_connection$key } from "../../../../__generated__/IssueCredentialConnectionInfo_connection.graphql";
 
 interface Props {
 	connectionId: string;
@@ -23,13 +24,7 @@ export const IssueCredentialView = ({ connectionId }: Props) => {
 			query IssueCredentialConnectionQuery($id: String!) {
 				connection(id: $id) {
 					id
-					state
-					rawState
-					protocol
-					protocolVersion
-					did
-					theirDid
-					theirLabel
+					...IssueCredentialConnectionInfo_connection
 				}
 			}
 		`,
@@ -58,6 +53,7 @@ export const IssueCredentialView = ({ connectionId }: Props) => {
 				<div className="relative w-full">
 					<Title>Issue New Credential to</Title>
 				</div>
+				<ConnectionInfo queryRef={connectionData.connection} />
 				{!issueType ? (
 					<SelectCredentialTypeToIssue setType={setIssueType} />
 				) : (
@@ -65,6 +61,36 @@ export const IssueCredentialView = ({ connectionId }: Props) => {
 						<IssueBusinessCredentialForm connId={connectionData.connection.id} />
 					</div>
 				)}
+			</div>
+		</div>
+	);
+};
+
+interface ConnectionInfoProps {
+	queryRef: IssueCredentialConnectionInfo_connection$key;
+}
+const ConnectionInfo = ({ queryRef }: ConnectionInfoProps) => {
+	const data = useFragment(
+		graphql`
+			fragment IssueCredentialConnectionInfo_connection on Connection {
+				id
+				state
+				rawState
+				protocol
+				protocolVersion
+				did
+				theirDid
+				theirLabel
+			}
+		`,
+		queryRef
+	);
+
+	return (
+		<div className="grid w-full grid-cols-3 gap-2 rounded-lg bg-gray-50 p-2.5">
+			<div className="flex flex-col">
+				<p className="text-sm text-gray-500">Other Agent's Label</p>
+				<p className="font-medium">{data.theirLabel}</p>
 			</div>
 		</div>
 	);
