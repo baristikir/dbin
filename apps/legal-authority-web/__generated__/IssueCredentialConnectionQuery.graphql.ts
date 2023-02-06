@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<702df33d9bc98aa998813fffb395fa54>>
+ * @generated SignedSource<<e53f361c1361e89cfe68e8a7db2bbee6>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,19 +9,14 @@
 // @ts-nocheck
 
 import { ConcreteRequest, Query } from 'relay-runtime';
+import { FragmentRefs } from "relay-runtime";
 export type IssueCredentialConnectionQuery$variables = {
   id: string;
 };
 export type IssueCredentialConnectionQuery$data = {
   readonly connection: {
-    readonly did: string | null;
     readonly id: string;
-    readonly protocol: string | null;
-    readonly protocolVersion: string | null;
-    readonly rawState: string;
-    readonly state: string;
-    readonly theirDid: string | null;
-    readonly theirLabel: string | null;
+    readonly " $fragmentSpreads": FragmentRefs<"IssueCredentialConnectionInfo_connection">;
   };
 };
 export type IssueCredentialConnectionQuery = {
@@ -39,86 +34,43 @@ var v0 = [
 ],
 v1 = [
   {
-    "alias": null,
-    "args": [
-      {
-        "kind": "Variable",
-        "name": "id",
-        "variableName": "id"
-      }
-    ],
-    "concreteType": "Connection",
-    "kind": "LinkedField",
-    "name": "connection",
-    "plural": false,
-    "selections": [
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "id",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "state",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "rawState",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "protocol",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "protocolVersion",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "did",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "theirDid",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "theirLabel",
-        "storageKey": null
-      }
-    ],
-    "storageKey": null
+    "kind": "Variable",
+    "name": "id",
+    "variableName": "id"
   }
-];
+],
+v2 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "id",
+  "storageKey": null
+};
 return {
   "fragment": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
     "name": "IssueCredentialConnectionQuery",
-    "selections": (v1/*: any*/),
+    "selections": [
+      {
+        "alias": null,
+        "args": (v1/*: any*/),
+        "concreteType": "Connection",
+        "kind": "LinkedField",
+        "name": "connection",
+        "plural": false,
+        "selections": [
+          (v2/*: any*/),
+          {
+            "args": null,
+            "kind": "FragmentSpread",
+            "name": "IssueCredentialConnectionInfo_connection"
+          }
+        ],
+        "storageKey": null
+      }
+    ],
     "type": "Query",
     "abstractKey": null
   },
@@ -127,19 +79,81 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
     "name": "IssueCredentialConnectionQuery",
-    "selections": (v1/*: any*/)
+    "selections": [
+      {
+        "alias": null,
+        "args": (v1/*: any*/),
+        "concreteType": "Connection",
+        "kind": "LinkedField",
+        "name": "connection",
+        "plural": false,
+        "selections": [
+          (v2/*: any*/),
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "state",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "rawState",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "protocol",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "protocolVersion",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "did",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "theirDid",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "theirLabel",
+            "storageKey": null
+          }
+        ],
+        "storageKey": null
+      }
+    ]
   },
   "params": {
-    "cacheID": "4c9efb88a85604986e5aa2649412e831",
+    "cacheID": "744a562f5db6c8da318dd4fa397c71d9",
     "id": null,
     "metadata": {},
     "name": "IssueCredentialConnectionQuery",
     "operationKind": "query",
-    "text": "query IssueCredentialConnectionQuery(\n  $id: String!\n) {\n  connection(id: $id) {\n    id\n    state\n    rawState\n    protocol\n    protocolVersion\n    did\n    theirDid\n    theirLabel\n  }\n}\n"
+    "text": "query IssueCredentialConnectionQuery(\n  $id: String!\n) {\n  connection(id: $id) {\n    id\n    ...IssueCredentialConnectionInfo_connection\n  }\n}\n\nfragment IssueCredentialConnectionInfo_connection on Connection {\n  id\n  state\n  rawState\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n}\n"
   }
 };
 })();
 
-(node as any).hash = "52b6afe25fa3949e54777e08373bec2a";
+(node as any).hash = "f43248c08620315b3db949b02021cf12";
 
 export default node;
