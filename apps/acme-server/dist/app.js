@@ -382,8 +382,7 @@ async function initServer(port2) {
       key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforacme00000000"
     },
     endpoints: import_afj_services2.AgentConfigServices.resolveEndpointsByEnvironment({
-      port: port2,
-      publicIpOrDomain: process.env.PUBLIC_IP_ADRESS
+      port: port2
     }),
     logger: new import_core3.ConsoleLogger(import_core3.LogLevel.debug)
   });

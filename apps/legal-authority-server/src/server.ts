@@ -7,6 +7,8 @@ import {
 	ConsoleLogger,
 	DidExchangeState,
 	HttpOutboundTransport,
+	IndyWallet,
+	InjectionSymbols,
 	LogLevel,
 } from "@aries-framework/core";
 import { HttpInboundTransport } from "@aries-framework/node";
@@ -21,6 +23,8 @@ import {
 	CONNECTION_ACCEPTED,
 	CONNECTION_REQUEST,
 } from "./subscriptions/connectionsTopics";
+import { getCredentialDefinitionId, getSchemaId } from "./schemas";
+import { isNullish } from "./utils/checkNullish";
 
 let agent: Agent;
 export function getAgent() {
@@ -66,10 +70,10 @@ export async function initServer(port: number) {
 				isProduction: false,
 			},
 			// {
-			// 	id: "pool-von-cloud-agent",
+			// 	id: "pool-von-network",
 			// 	indyNamespace: "von:local",
 			// 	isProduction: false,
-			// 	ledgerUrl: "http://EXPOSED_VON_IP_ADRESS:9000/genesis",
+			// 	ledgerUrl: "http://EXPOSED_IP_ADRESS:9000/genesis",
 			// },
 		],
 	});
@@ -143,15 +147,18 @@ export async function initServer(port: number) {
 	);
 	//#endregion
 
+	// Register Subscriber for incoming HTTP events, main usage for connection invitations
 	await registerAgentConnectionListener(agent);
 
-	// (await agent.connections.getAll()).forEach(
-	// 	async (connection) => await agent.connections.deleteById(connection.id)
+	// await setTimeout(
+	// 	async () => await checkSchemaRegistries(agent),
+	// 	5000
 	// );
 
 	console.log(`[server-log]: server running on ${port}`);
 }
 
+// TODO: Code Splitting
 async function registerAgentConnectionListener(agent: Agent) {
 	agent.events.on<ConnectionStateChangedEvent>(
 		ConnectionEventTypes.ConnectionStateChanged,
@@ -176,4 +183,44 @@ async function registerAgentConnectionListener(agent: Agent) {
 			}
 		}
 	);
+}
+
+// TODO: Code Splitting
+async function checkSchemaRegistries(agent: Agent) {
+	let schemaId = getSchemaId();
+	let credentialDefinitionId = getCredentialDefinitionId();
+
+	if (isNullish(schemaId) || schemaId.length === 0) {
+		console.log("[error] Schema not registered properly.");
+		// const schema = await agent.ledger.registerSchema({
+		// 	name: "BusinessCredential",
+		// 	version: "1.0",
+		// 	attributes: [
+		// 		"company_registered_name",
+		// 		"company_registered_adress",
+		// 		"company_registered_country",
+		// 		"company_status",
+		// 		"company_creation_date",
+		// 	],
+		// });
+
+		// schemaId = schema.id;
+		let d = await agent.dependencyManager.resolve<IndyWallet>(
+			InjectionSymbols.Wallet
+		).publicDid;
+		console.log(d);
+		console.log(await agent.dids.resolve(d?.did!));
+
+		return;
+	}
+
+	if (isNullish(credentialDefinitionId) || credentialDefinitionId.length === 0) {
+		console.log("[error] Credential Definition not registered properly.");
+		throw new Error("Credential Definition not registered");
+	}
+
+	const schemaRecord = await agent.ledger.getSchema(schemaId!);
+	if (isNullish(schemaRecord)) {
+		throw new Error("Schema Record not stored agent storage.");
+	}
 }

@@ -11,7 +11,6 @@ import { AgentConfigServices } from "@dbin/afj-services";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
 import { Context } from "./graphql/builder";
-import { resolveEndpointsByEnvironment } from "@dbin/afj-services/src/agentConfigs";
 
 let agent: Agent;
 export function getAgent() {
@@ -41,7 +40,7 @@ export async function initServer(port: number) {
 		},
 		endpoints: AgentConfigServices.resolveEndpointsByEnvironment({
 			port,
-			publicIpOrDomain: process.env.PUBLIC_IP_ADRESS,
+			// publicIpOrDomain: process.env.PUBLIC_IP_ADRESS,
 		}),
 		logger: new ConsoleLogger(LogLevel.debug),
 	});
@@ -56,7 +55,7 @@ export async function initServer(port: number) {
 				isProduction: false,
 			},
 			// {
-			// 	id: "pool-von-cloud-agent",
+			// 	id: "pool-von-network",
 			// 	indyNamespace: "von:local",
 			// 	isProduction: false,
 			// 	ledgerUrl: "http://EXPOSED_VON_IP_ADRESS:9000/genesis",
