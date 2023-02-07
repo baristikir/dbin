@@ -227,7 +227,7 @@ var import_dotenv = __toESM(require_main());
 // src/server.ts
 var import_express = __toESM(require("express"));
 var import_morgan = __toESM(require("morgan"));
-var import_core5 = require("@aries-framework/core");
+var import_core4 = require("@aries-framework/core");
 var import_node2 = require("@aries-framework/node");
 var import_ws = require("ws");
 var import_ws2 = require("graphql-ws/lib/use/ws");
@@ -286,7 +286,6 @@ builder.scalarType("DateTime", {
 });
 
 // src/graphql/resolvers/agentResolver.ts
-var import_core2 = require("@aries-framework/core");
 var AgentObjectRef = builder.objectRef("Agent");
 AgentObjectRef.implement({
   fields: (t) => ({
@@ -299,17 +298,13 @@ builder.queryField(
   (t) => t.field({
     type: AgentObjectRef,
     resolve: async (_root, _args, { agent: agent2 }) => {
-      const wallet = await agent2.dependencyManager.resolve(
-        import_core2.InjectionSymbols.Wallet
-      );
-      console.log(wallet.publicDid);
       return agent2;
     }
   })
 );
 
 // src/graphql/resolvers/connectionResolver.ts
-var import_core3 = require("@aries-framework/core");
+var import_core2 = require("@aries-framework/core");
 var import_afj_services = require("@dbin/afj-services");
 
 // src/subscriptions/connectionsTopics.ts
@@ -374,11 +369,11 @@ function getCredentialDefinitionId() {
 var ConnectionObjectRef = builder.objectRef("Connection");
 function connectionStateToReadable(state) {
   switch (state) {
-    case import_core3.DidExchangeState.Completed:
+    case import_core2.DidExchangeState.Completed:
       return "Connection Established";
-    case import_core3.DidExchangeState.RequestReceived:
+    case import_core2.DidExchangeState.RequestReceived:
       return "Connection Processing";
-    case import_core3.DidExchangeState.RequestSent:
+    case import_core2.DidExchangeState.RequestSent:
       return "Connection Processing";
     default:
       return "Unknown";
@@ -611,13 +606,13 @@ builder.queryField(
 );
 
 // src/utils/wallet.ts
-var import_core4 = require("@aries-framework/core");
+var import_core3 = require("@aries-framework/core");
 var import_node = require("@aries-framework/node");
 var import_node_crypto = require("crypto");
 async function createSeed(agent2) {
   const seed = (0, import_node_crypto.randomBytes)(16).toString("hex");
   const wallet = agent2.dependencyManager.resolve(
-    import_core4.InjectionSymbols.Wallet
+    import_core3.InjectionSymbols.Wallet
   );
   const [did, verkey] = await import_node.agentDependencies.indy.createAndStoreMyDid(
     wallet.handle,
@@ -719,7 +714,7 @@ async function initServer(port2) {
       key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforlegal0000000"
     },
     endpoints: import_afj_services4.AgentConfigServices.resolveEndpointsByEnvironment({ port: port2 }),
-    logger: new import_core5.ConsoleLogger(import_core5.LogLevel.debug),
+    logger: new import_core4.ConsoleLogger(import_core4.LogLevel.debug),
     publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED
   });
   agent = await import_afj_services4.AgentConfigServices.createAgent({
@@ -733,7 +728,7 @@ async function initServer(port2) {
       }
     ]
   });
-  agent.registerOutboundTransport(new import_core5.HttpOutboundTransport());
+  agent.registerOutboundTransport(new import_core4.HttpOutboundTransport());
   const inboundTransporter = new import_node2.HttpInboundTransport({
     port: port2,
     app
@@ -791,7 +786,7 @@ async function initServer(port2) {
 }
 async function registerAgentConnectionListener(agent2) {
   agent2.events.on(
-    import_core5.ConnectionEventTypes.ConnectionStateChanged,
+    import_core4.ConnectionEventTypes.ConnectionStateChanged,
     ({ payload, metadata, type }) => {
       console.log(
         "[event-listener]: New Connection Response for '@dbin/legal-authority-server' agent."
@@ -800,10 +795,10 @@ async function registerAgentConnectionListener(agent2) {
         `[event-listener]: ConnectionRecord & State: ${payload.connectionRecord.id} ++ ${payload.connectionRecord.state} , previousState: ${payload.previousState}`
       );
       switch (payload.connectionRecord.state) {
-        case import_core5.DidExchangeState.Completed:
+        case import_core4.DidExchangeState.Completed:
           pubsub.publish(CONNECTION_ACCEPTED);
           break;
-        case import_core5.DidExchangeState.RequestSent:
+        case import_core4.DidExchangeState.RequestSent:
           pubsub.publish(CONNECTION_REQUEST);
           break;
         default:
