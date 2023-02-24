@@ -178,10 +178,11 @@ var import_morgan = __toESM(require("morgan"));
 var import_core3 = require("@aries-framework/core");
 var import_node = require("@aries-framework/node");
 var import_afj_services2 = require("@dbin/afj-services");
+var import_server_lib3 = require("@dbin/server-lib");
 var import_graphql_yoga = require("graphql-yoga");
 
 // src/graphql/index.ts
-var import_server_lib = require("@dbin/server-lib");
+var import_server_lib2 = require("@dbin/server-lib");
 
 // src/graphql/builder.ts
 var import_core = __toESM(require("@pothos/core"));
@@ -190,8 +191,9 @@ var import_plugin_validation = __toESM(require("@pothos/plugin-validation"));
 var builder = new import_core.default({
   defaultInputFieldRequiredness: true,
   plugins: [import_plugin_scope_auth.default, import_plugin_validation.default],
-  authScopes: ({ agent: agent2 }) => ({
-    withAgent: !!agent2
+  authScopes: ({ agent: agent2, user }) => ({
+    withAgent: !!agent2,
+    userId: !!user
   })
 });
 builder.queryType({
@@ -352,29 +354,126 @@ builder.mutationField(
   })
 );
 
+// src/graphql/resolvers/authResolver.ts
+var import_server_lib = require("@dbin/server-lib");
+var import_date_fns = require("date-fns");
+
+// src/utils/prisma.ts
+var import_client = require("@prisma/client");
+var db;
+if (process.env.NODE_ENV === "production") {
+  db = new import_client.PrismaClient({
+    log: ["error", "warn"]
+  });
+} else {
+  db = new import_client.PrismaClient({
+    log: ["info", "query", "error", "warn"]
+  });
+}
+
+// src/graphql/resolvers/authResolver.ts
+var SignInInput = builder.inputType("SignInInput", {
+  fields: (t) => ({
+    email: t.string(),
+    password: t.string()
+  })
+});
+builder.mutationField(
+  "signIn",
+  (t) => t.field({
+    type: "Boolean",
+    skipTypeScopes: true,
+    args: {
+      input: t.arg({ type: SignInInput })
+    },
+    resolve: async (_root, { input }, { req }) => {
+      const user = await db.user.findUnique({
+        where: { email: input.email }
+      });
+      if (!user) {
+        throw new Error(`User with ${input.email} E-Mail not found`);
+      }
+      const isValid = await import_server_lib.AuthUtils.verifyPassword({
+        hashedPassword: user.password,
+        password: input.password
+      });
+      if (isValid) {
+        const session = await db.session.create({
+          data: {
+            userId: user.id,
+            expiresAt: (0, import_date_fns.addSeconds)(new Date(), import_server_lib.SessionUtils.SESSION_TTL)
+          }
+        });
+        if (!session) {
+          throw new Error("Internal Server Error");
+        }
+        req.session.sessionId = session.id;
+        await req.session.save();
+        return true;
+      }
+      req.session.destroy();
+      return false;
+    }
+  })
+);
+builder.queryField(
+  "me",
+  (t) => t.field({
+    type: "Boolean",
+    resolve: async (_root, _args, { user }) => {
+      if (!user) {
+        return false;
+      }
+      const userRecord = await db.user.findUnique({
+        where: { id: user }
+      });
+      return !!userRecord;
+    }
+  })
+);
+
 // src/graphql/index.ts
 var IS_PRODUCTION = process.env.NODE_ENV === "production";
 var schema = builder.toSchema({});
 if (!IS_PRODUCTION) {
-  import_server_lib.GraphQLUtils.writeSchema(schema, "schema.graphql");
+  import_server_lib2.GraphQLUtils.writeSchema(schema, "schema.graphql");
 }
 
 // src/server.ts
+var import_cors = __toESM(require("cors"));
 var agent;
 function getAgent() {
   if (!agent)
     return null;
   return agent;
 }
-function createGraphQLContext(request) {
+async function createGraphQLContext(context) {
+  let userId;
+  if ("req" in context && context.req.session.sessionId) {
+    const session = await db.session.findUnique({
+      where: { id: context.req.session.sessionId },
+      select: { user: true }
+    });
+    userId = session == null ? void 0 : session.user.id;
+  }
+  console.log("[req] IncomingMessage from userId: ", userId);
   return {
-    req: request,
+    req: context.req,
+    user: userId,
     agent: getAgent()
   };
 }
 async function initServer(port2) {
   const app = (0, import_express.default)();
   app.use((0, import_morgan.default)(":date[iso] :method :url :response-time"));
+  const SECRET_SESSION_KEY = process.env.SESSION_COOKIE_PASSWORD;
+  if (!SECRET_SESSION_KEY) {
+    throw new Error("Secret Session Key could not be found.");
+  }
+  const session = await import_server_lib3.SessionUtils.createIronSession({
+    cookieName: "session.info",
+    password: SECRET_SESSION_KEY
+  });
   const agentConfig = await import_afj_services2.AgentConfigServices.createAgentConfig({
     label: "@dbin/acme-agent",
     walletConfig: {
@@ -403,14 +502,25 @@ async function initServer(port2) {
     app
   });
   agent.registerInboundTransport(inboundTransporter);
+  const whitelist = ["http://localhost:3001"];
   const yoga = (0, import_graphql_yoga.createYoga)({
     schema,
     graphqlEndpoint: "/api/graphql",
     graphiql: true,
     landingPage: false,
-    context: ({ request }) => createGraphQLContext(request)
+    cors: {
+      credentials: true,
+      origin: whitelist
+    },
+    context: ({ ...context }) => createGraphQLContext(context)
   });
-  app.use("/api/graphql", yoga);
+  app.use(
+    (0, import_cors.default)({
+      origin: whitelist,
+      credentials: true
+    })
+  );
+  app.use("/api/graphql", session, yoga);
   await agent.initialize();
   console.log(`[server-log]: server running on ${port2}`);
 }

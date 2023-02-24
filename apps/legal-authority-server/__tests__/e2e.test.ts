@@ -71,7 +71,6 @@ describe("e2e", () => {
 
 			const agentAConnections = await agentA.connections.getAll();
 			console.log("AgentA Connections: ", agentAConnections);
-			expect;
 
 			// const newConnection = await agentA.connections.findAllByOutOfBandId(
 			// 	outOfBandRecord.id
@@ -80,6 +79,15 @@ describe("e2e", () => {
 		} else {
 			fail();
 		}
+	});
+
+	test("Should create a connection-less presentation", async () => {
+		const { proofRecord, message } = await agentA.proofs.createRequest({
+			protocolVersion: "v2",
+			proofFormats: {
+				indy: {},
+			},
+		});
 	});
 });
 

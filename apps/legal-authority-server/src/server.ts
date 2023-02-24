@@ -192,7 +192,7 @@ async function checkSchemaRegistries(agent: Agent) {
 
 	if (isNullish(schemaId) || schemaId.length === 0) {
 		console.log("[error] Schema not registered properly.");
-		// const schema = await agent.ledger.registerSchema({
+		// const credentialSchema = await agent.ledger.registerSchema({
 		// 	name: "BusinessCredential",
 		// 	version: "1.0",
 		// 	attributes: [
@@ -202,6 +202,12 @@ async function checkSchemaRegistries(agent: Agent) {
 		// 		"company_status",
 		// 		"company_creation_date",
 		// 	],
+		// });
+
+		// const credentialDefinition = await agent.ledger.registerCredentialDefinition({
+		// 	schema: credentialSchema,
+		// 	supportRevocation: true,
+		// 	tag: "BusinessCredentialDefinition",
 		// });
 
 		// schemaId = schema.id;

@@ -19,6 +19,8 @@
 		"typescript": "^4.9.4"
 	},
 	"dependencies": {
-		"graphql": "^16.6.0"
+		"graphql": "^16.6.0",
+		"hash-wasm": "^4.9.0",
+		"iron-session": "^6.3.1"
 	}
 }

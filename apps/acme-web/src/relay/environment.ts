@@ -17,13 +17,21 @@ const CACHE_TTL = 5 * 1000; // 5 seconds, to resolve preloaded results
 
 export async function networkFetch(
 	request: RequestParameters,
-	variables: Variables
+	variables: Variables,
+	cookies?: any
 ): Promise<GraphQLResponse> {
+	const set_cookie = cookies
+		? {
+				Cookie: `session.info=${cookies["session.info"]}`,
+		  }
+		: undefined;
 	const res = await fetch(HTTP_ENDPOINT, {
 		method: "POST",
+		credentials: "include",
 		headers: {
 			Accept: "application/json",
 			"Content-Type": "application/json",
+			...(set_cookie ?? {}),
 		},
 		body: JSON.stringify({
 			query: request.text,
@@ -57,7 +65,7 @@ export const responseCache: QueryResponseCache | null = IS_SERVER
 			ttl: CACHE_TTL,
 	  });
 
-function createNetwork() {
+function createNetwork(cookies?: any) {
 	async function fetchQuery(
 		params: RequestParameters,
 		variables: Variables,
@@ -73,25 +81,25 @@ function createNetwork() {
 			}
 		}
 
-		return networkFetch(params, variables);
+		return networkFetch(params, variables, cookies);
 	}
 
 	const network = Network.create(fetchQuery);
 	return network;
 }
 
-function createEnvironment() {
+function createEnvironment(cookies?: any) {
 	return new Environment({
-		network: createNetwork(),
+		network: createNetwork(cookies),
 		store: new Store(RecordSource.create()),
 		isServer: IS_SERVER,
 	});
 }
 
 export const environment = createEnvironment();
-export function getCurrentEnvironment() {
+export function getCurrentEnvironment(cookies?: any) {
 	if (IS_SERVER) {
-		return createEnvironment();
+		return createEnvironment(cookies);
 	}
 
 	return environment;

@@ -7,9 +7,13 @@
 		"build": "tsup src/app.ts --format cjs",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
 		"dev": "tsup src/app.ts --format cjs --watch --onSuccess \"node dist/app.js\"",
+		"dev:db": "docker-compose up -d",
 		"lint": "tsc --noEmit && TIMING=1 eslint \"src/**/*.ts*\"",
 		"start": "node dist/app.js",
 		"test": "jest --detectOpenHandles"
+	},
+	"prisma": {
+		"seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
 	},
 	"keywords": [],
 	"author": "",
@@ -17,6 +21,7 @@
 	"devDependencies": {
 		"@types/node": "^17.0.12",
 		"dotenv": "^16.0.3",
+		"prisma": "^4.10.1",
 		"ts-node": "^10.9.1",
 		"typescript": "^4.9.3"
 	},
@@ -28,10 +33,13 @@
 		"@pothos/core": "^3.24.0",
 		"@pothos/plugin-scope-auth": "^3.16.0",
 		"@pothos/plugin-validation": "^3.8.7",
+		"@prisma/client": "^4.10.1",
 		"cors": "^2.8.5",
+		"date-fns": "^2.29.3",
 		"express": "^4.18.2",
 		"graphql": "^16.6.0",
 		"graphql-yoga": "^3.1.0",
+		"iron-session": "^6.3.1",
 		"morgan": "^1.10.0",
 		"ws": "^8.11.0"
 	}

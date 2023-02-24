@@ -2,12 +2,14 @@ import { Agent } from "@aries-framework/core";
 import SchemaBuilder from "@pothos/core";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import ValidationPlugin from "@pothos/plugin-validation";
+import { IncomingMessage } from "http";
 
 interface BaseContext {
-	req: Request;
+	req: IncomingMessage;
 }
 export interface Context extends BaseContext {
 	agent?: Agent | null;
+	user?: string;
 }
 interface AuthContext {
 	agent: Agent;
@@ -18,6 +20,7 @@ interface SchemaBuilderTypes {
 	Context: Context & AuthContext;
 	AuthScopes: {
 		withAgent: boolean;
+		userId: boolean;
 	};
 	AuthContexts: {
 		withAgent: Context & AuthContext;
@@ -27,11 +30,13 @@ interface SchemaBuilderTypes {
 	};
 }
 
+// @ts-ignore
 export const builder = new SchemaBuilder<SchemaBuilderTypes>({
 	defaultInputFieldRequiredness: true,
 	plugins: [ScopeAuthPlugin, ValidationPlugin],
-	authScopes: ({ agent }) => ({
+	authScopes: ({ agent, user }) => ({
 		withAgent: !!agent,
+		userId: !!user,
 	}),
 });
 

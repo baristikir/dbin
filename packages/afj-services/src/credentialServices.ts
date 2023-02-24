@@ -1,7 +1,11 @@
 import {
+	AutoAcceptCredential,
 	ConnectionRecord,
 	CredentialPreviewAttributeOptions,
 	CredentialState,
+	ProposeCredentialOptions,
+	Protocol,
+	V2ProofService,
 } from "@aries-framework/core";
 import { ServiceWithAgent } from "./baseService";
 
@@ -61,6 +65,26 @@ export class CredentialService extends ServiceWithAgent {
 				},
 			},
 		});
+	}
+
+	/**
+	 * Propose Credential to an Issuer with input data
+	 * @param
+	 */
+	async proposeCredential({
+		...props
+	}: Pick<
+		ProposeCredentialOptions,
+		"credentialFormats" | "connectionId" | "protocolVersion"
+	>) {
+		const credentialExchangeRecord =
+			await this.agent.credentials.proposeCredential({
+				...props,
+				protocolVersion: "v1",
+				autoAcceptCredential: AutoAcceptCredential.ContentApproved,
+			});
+
+		return credentialExchangeRecord;
 	}
 
 	async revokeCredential({}) {

@@ -26,8 +26,10 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // index.ts
 var server_lib_exports = {};
 __export(server_lib_exports, {
+  AuthUtils: () => auth_exports,
   GraphQLObjects: () => schemaObjects_exports,
-  GraphQLUtils: () => graphqlUtils_exports
+  GraphQLUtils: () => graphqlUtils_exports,
+  SessionUtils: () => sessions_exports
 });
 module.exports = __toCommonJS(server_lib_exports);
 
@@ -50,8 +52,67 @@ function writeSchema(schema, pathTo) {
 
 // src/schemaObjects.ts
 var schemaObjects_exports = {};
+
+// src/auth.ts
+var auth_exports = {};
+__export(auth_exports, {
+  hashPassword: () => hashPassword,
+  verifyPassword: () => verifyPassword
+});
+var import_crypto = __toESM(require("crypto"));
+var import_hash_wasm = require("hash-wasm");
+var COST_FACTOR = 11;
+async function verifyPassword({
+  password,
+  hashedPassword
+}) {
+  return await (0, import_hash_wasm.bcryptVerify)({
+    hash: hashedPassword,
+    password
+  });
+}
+async function hashPassword({ password }) {
+  const salt = import_crypto.default.randomBytes(16);
+  const hash = await (0, import_hash_wasm.bcrypt)({
+    password,
+    salt,
+    costFactor: COST_FACTOR,
+    outputType: "encoded"
+  });
+  return hash;
+}
+
+// src/sessions.ts
+var sessions_exports = {};
+__export(sessions_exports, {
+  SESSION_TTL: () => SESSION_TTL,
+  createIronSession: () => createIronSession,
+  createSession: () => createSession,
+  deleteSession: () => deleteSession,
+  resolveSession: () => resolveSession
+});
+var import_express = require("iron-session/express");
+var SESSION_TTL = 15 * 24 * 3600;
+var createIronSession = ({ ...props }) => {
+  return (0, import_express.ironSession)({
+    ttl: SESSION_TTL,
+    cookieOptions: {
+      httpOnly: true,
+      ...props.cookieOptions
+    },
+    ...props
+  });
+};
+function resolveSession({}) {
+}
+function createSession({}) {
+}
+function deleteSession({}) {
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AuthUtils,
   GraphQLObjects,
-  GraphQLUtils
+  GraphQLUtils,
+  SessionUtils
 });

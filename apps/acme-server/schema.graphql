@@ -36,13 +36,20 @@ scalar DateTime
 type Mutation {
   acceptInvitation(input: ConnectWithAgentInput!): Boolean!
   removeConnection(input: RemoveConnectionInput!): Boolean!
+  signIn(input: SignInInput!): Boolean!
 }
 
 type Query {
   agent: Agent!
   connections: [Connection!]!
+  me: Boolean!
 }
 
 input RemoveConnectionInput {
   id: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
 }
