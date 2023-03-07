@@ -2525,7 +2525,7 @@ var import_dotenv = __toESM(require_main());
 // src/server.ts
 var import_express = __toESM(require("express"));
 var import_morgan = __toESM(require("morgan"));
-var import_core4 = require("@aries-framework/core");
+var import_core5 = require("@aries-framework/core");
 var import_node2 = require("@aries-framework/node");
 var import_ws = require("ws");
 var import_ws2 = require("graphql-ws/lib/use/ws");
@@ -2636,25 +2636,26 @@ var import_node_fs = require("fs");
 
 // src/schemas/schema-prod.json
 var schema_prod_default = {
-  schemaId: "SYiUQo2fGYKkUqk7evkJT1:2:Conference Ticket:1.0",
-  credentialDefinitionId: "SYiUQo2fGYKkUqk7evkJT1:3:CL:11837:default"
-};
-
-// src/schemas/schema-local.json
-var schema_local_default = {
-  schemaId: "",
-  credentialDefinitionId: ""
+  schemaId: "SYiUQo2fGYKkUqk7evkJT1:2:BusinessCredential:1.0",
+  credentialDefinitionId: "SYiUQo2fGYKkUqk7evkJT1:3:CL:13157:BusinessCredentialDefinition"
 };
 
 // src/schemas/index.ts
 var schemaId = void 0;
 var credentialDefinitionId = void 0;
-if (process.env.NODE_ENV === "production") {
-  schemaId = schema_prod_default.schemaId;
-  credentialDefinitionId = schema_prod_default.credentialDefinitionId;
-} else {
-  schemaId = schema_local_default.schemaId;
-  credentialDefinitionId = schema_local_default.credentialDefinitionId;
+schemaId = schema_prod_default.schemaId;
+credentialDefinitionId = schema_prod_default.credentialDefinitionId;
+function saveSchemaId(newSchemaId) {
+  let schemas = schema_prod_default;
+  schemaId = newSchemaId;
+  const updatedSchema = { ...schemas, schemaId };
+  (0, import_node_fs.writeFileSync)("schema.json", JSON.stringify(updatedSchema, null, 2));
+}
+function saveCredentialDefinitionId(newCredentialDefinitionId) {
+  let schemas = schema_prod_default;
+  credentialDefinitionId = newCredentialDefinitionId;
+  const updatedSchemas = { ...schemas, credentialDefinitionId };
+  (0, import_node_fs.writeFileSync)("schema.json", JSON.stringify(updatedSchemas, null, 2));
 }
 function getSchemaId() {
   return schemaId;
@@ -2989,6 +2990,89 @@ if (!IS_PRODUCTION) {
   import_server_lib.GraphQLUtils.writeSchema(schema, "schema.graphql");
 }
 
+// src/utils/checkNullish.ts
+function isNullish(val) {
+  return val === null || val === void 0;
+}
+
+// src/credentialRegistration.ts
+async function checkRegistrationOnLedger(agent2) {
+  if (agent2.isInitialized !== true) {
+    setTimeout(() => checkRegistrationOnLedger(agent2), 2500);
+  }
+  let schemaId2 = getSchemaId();
+  let credentialDefinitionId2 = getCredentialDefinitionId();
+  if (isNullish(schemaId2) || schemaId2.length <= 0) {
+    const credentialSchema = await registerBusinessCredentialSchema(agent2);
+    schemaId2 = credentialSchema.id;
+    saveSchemaId(schemaId2);
+  }
+  if ((isNullish(credentialDefinitionId2) || credentialDefinitionId2.length <= 0) && schemaId2.length > 0) {
+    const credentialDefinition = await registerBusinessCredentialDefinition(
+      agent2,
+      schemaId2
+    );
+    credentialDefinitionId2 = credentialDefinition.id;
+    saveCredentialDefinitionId(credentialDefinitionId2);
+  }
+}
+async function registerBusinessCredentialSchema(agent2) {
+  console.log("[info] Registering BusinessCredential schema to ledger");
+  const credentialSchema = await agent2.ledger.registerSchema({
+    name: "BusinessCredential",
+    version: "1.0",
+    attributes: [
+      "company_registered_name",
+      "company_registered_adress",
+      "company_registered_country",
+      "company_status",
+      "company_creation_date"
+    ]
+  });
+  return credentialSchema;
+}
+async function registerBusinessCredentialDefinition(agent2, credentialSchemaOrId) {
+  console.log("[info] Registering BusinessCredential definition to ledger");
+  let credentialSchema;
+  if (typeof credentialSchemaOrId === "string") {
+    credentialSchema = await agent2.ledger.getSchema(credentialSchemaOrId);
+  } else {
+    credentialSchema = credentialSchemaOrId;
+  }
+  const credentialDefinition = await agent2.ledger.registerCredentialDefinition({
+    schema: credentialSchema,
+    supportRevocation: true,
+    tag: "BusinessCredentialDefinition"
+  });
+  return credentialDefinition;
+}
+
+// src/subscriptions/connectionListener.ts
+var import_core4 = require("@aries-framework/core");
+async function registerAgentConnectionListener(agent2) {
+  agent2.events.on(
+    import_core4.ConnectionEventTypes.ConnectionStateChanged,
+    ({ payload, metadata, type }) => {
+      console.log(
+        "[event-listener]: New Connection Response for '@dbin/legal-authority-server' agent."
+      );
+      console.log(
+        `[event-listener]: ConnectionRecord & State: ${payload.connectionRecord.id} ++ ${payload.connectionRecord.state} , previousState: ${payload.previousState}`
+      );
+      switch (payload.connectionRecord.state) {
+        case import_core4.DidExchangeState.Completed:
+          pubsub.publish(CONNECTION_ACCEPTED);
+          break;
+        case import_core4.DidExchangeState.RequestSent:
+          pubsub.publish(CONNECTION_REQUEST);
+          break;
+        default:
+          break;
+      }
+    }
+  );
+}
+
 // src/server.ts
 var agent;
 function getAgent() {
@@ -3012,7 +3096,7 @@ async function initServer(port2) {
       key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforlegal0000000"
     },
     endpoints: import_afj_services4.AgentConfigServices.resolveEndpointsByEnvironment({ port: port2 }),
-    logger: new import_core4.ConsoleLogger(import_core4.LogLevel.debug),
+    logger: new import_core5.ConsoleLogger(import_core5.LogLevel.debug),
     publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED
   });
   agent = await import_afj_services4.AgentConfigServices.createAgent({
@@ -3026,7 +3110,7 @@ async function initServer(port2) {
       }
     ]
   });
-  agent.registerOutboundTransport(new import_core4.HttpOutboundTransport());
+  agent.registerOutboundTransport(new import_core5.HttpOutboundTransport());
   const inboundTransporter = new import_node2.HttpInboundTransport({
     port: port2,
     app
@@ -3080,30 +3164,8 @@ async function initServer(port2) {
     wsServer
   );
   await registerAgentConnectionListener(agent);
+  await checkRegistrationOnLedger(agent);
   console.log(`[server-log]: server running on ${port2}`);
-}
-async function registerAgentConnectionListener(agent2) {
-  agent2.events.on(
-    import_core4.ConnectionEventTypes.ConnectionStateChanged,
-    ({ payload, metadata, type }) => {
-      console.log(
-        "[event-listener]: New Connection Response for '@dbin/legal-authority-server' agent."
-      );
-      console.log(
-        `[event-listener]: ConnectionRecord & State: ${payload.connectionRecord.id} ++ ${payload.connectionRecord.state} , previousState: ${payload.previousState}`
-      );
-      switch (payload.connectionRecord.state) {
-        case import_core4.DidExchangeState.Completed:
-          pubsub.publish(CONNECTION_ACCEPTED);
-          break;
-        case import_core4.DidExchangeState.RequestSent:
-          pubsub.publish(CONNECTION_REQUEST);
-          break;
-        default:
-          break;
-      }
-    }
-  );
 }
 
 // src/app.ts

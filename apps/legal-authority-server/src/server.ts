@@ -2,13 +2,8 @@ import express from "express";
 import morgan from "morgan";
 import {
 	Agent,
-	ConnectionEventTypes,
-	ConnectionStateChangedEvent,
 	ConsoleLogger,
-	DidExchangeState,
 	HttpOutboundTransport,
-	IndyWallet,
-	InjectionSymbols,
 	LogLevel,
 } from "@aries-framework/core";
 import { HttpInboundTransport } from "@aries-framework/node";
@@ -18,13 +13,8 @@ import { AgentConfigServices } from "@dbin/afj-services";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
 import { Context } from "./graphql/builder";
-import { pubsub } from "./utils/pubsub";
-import {
-	CONNECTION_ACCEPTED,
-	CONNECTION_REQUEST,
-} from "./subscriptions/connectionsTopics";
-import { getCredentialDefinitionId, getSchemaId } from "./schemas";
-import { isNullish } from "./utils/checkNullish";
+import { checkRegistrationOnLedger } from "./credentialRegistration";
+import { registerAgentConnectionListener } from "./subscriptions/connectionListener";
 
 let agent: Agent;
 export function getAgent() {
@@ -149,84 +139,7 @@ export async function initServer(port: number) {
 
 	// Register Subscriber for incoming HTTP events, main usage for connection invitations
 	await registerAgentConnectionListener(agent);
-
-	// await setTimeout(
-	// 	async () => await checkSchemaRegistries(agent),
-	// 	5000
-	// );
+	await checkRegistrationOnLedger(agent);
 
 	console.log(`[server-log]: server running on ${port}`);
-}
-
-// TODO: Code Splitting
-async function registerAgentConnectionListener(agent: Agent) {
-	agent.events.on<ConnectionStateChangedEvent>(
-		ConnectionEventTypes.ConnectionStateChanged,
-		({ payload, metadata, type }) => {
-			console.log(
-				"[event-listener]: New Connection Response for '@dbin/legal-authority-server' agent."
-			);
-			console.log(
-				`[event-listener]: ConnectionRecord & State: ${payload.connectionRecord.id} ++ ${payload.connectionRecord.state} , previousState: ${payload.previousState}`
-			);
-
-			switch (payload.connectionRecord.state) {
-				case DidExchangeState.Completed:
-					pubsub.publish(CONNECTION_ACCEPTED);
-					break;
-				case DidExchangeState.RequestSent:
-					pubsub.publish(CONNECTION_REQUEST);
-					break;
-
-				default:
-					break;
-			}
-		}
-	);
-}
-
-// TODO: Code Splitting
-async function checkSchemaRegistries(agent: Agent) {
-	let schemaId = getSchemaId();
-	let credentialDefinitionId = getCredentialDefinitionId();
-
-	if (isNullish(schemaId) || schemaId.length === 0) {
-		console.log("[error] Schema not registered properly.");
-		// const credentialSchema = await agent.ledger.registerSchema({
-		// 	name: "BusinessCredential",
-		// 	version: "1.0",
-		// 	attributes: [
-		// 		"company_registered_name",
-		// 		"company_registered_adress",
-		// 		"company_registered_country",
-		// 		"company_status",
-		// 		"company_creation_date",
-		// 	],
-		// });
-
-		// const credentialDefinition = await agent.ledger.registerCredentialDefinition({
-		// 	schema: credentialSchema,
-		// 	supportRevocation: true,
-		// 	tag: "BusinessCredentialDefinition",
-		// });
-
-		// schemaId = schema.id;
-		let d = await agent.dependencyManager.resolve<IndyWallet>(
-			InjectionSymbols.Wallet
-		).publicDid;
-		console.log(d);
-		console.log(await agent.dids.resolve(d?.did!));
-
-		return;
-	}
-
-	if (isNullish(credentialDefinitionId) || credentialDefinitionId.length === 0) {
-		console.log("[error] Credential Definition not registered properly.");
-		throw new Error("Credential Definition not registered");
-	}
-
-	const schemaRecord = await agent.ledger.getSchema(schemaId!);
-	if (isNullish(schemaRecord)) {
-		throw new Error("Schema Record not stored agent storage.");
-	}
 }

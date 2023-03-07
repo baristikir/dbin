@@ -5,16 +5,11 @@ import localSchema from "./schema-local.json";
 let schemaId: string | undefined = undefined;
 let credentialDefinitionId: string | undefined = undefined;
 
-if (process.env.NODE_ENV === "production") {
-	schemaId = prodSchema.schemaId;
-	credentialDefinitionId = prodSchema.credentialDefinitionId;
-} else {
-	schemaId = localSchema.schemaId;
-	credentialDefinitionId = localSchema.credentialDefinitionId;
-}
+schemaId = prodSchema.schemaId;
+credentialDefinitionId = prodSchema.credentialDefinitionId;
 
 export function saveSchemaId(newSchemaId: string) {
-	let schemas = process.env.NODE_ENV === "production" ? prodSchema : localSchema;
+	let schemas = prodSchema;
 
 	schemaId = newSchemaId;
 	const updatedSchema = { ...schemas, schemaId };
@@ -22,7 +17,7 @@ export function saveSchemaId(newSchemaId: string) {
 }
 
 export function saveCredentialDefinitionId(newCredentialDefinitionId: string) {
-	let schemas = process.env.NODE_ENV === "production" ? prodSchema : localSchema;
+	let schemas = prodSchema;
 
 	credentialDefinitionId = newCredentialDefinitionId;
 	const updatedSchemas = { ...schemas, credentialDefinitionId };
