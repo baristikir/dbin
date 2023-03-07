@@ -3,7 +3,7 @@ import { ConnectionService } from "@dbin/afj-services";
 import { GraphQLObjects } from "@dbin/server-lib";
 import { builder } from "../builder";
 
-const ConnectionObjectRef =
+export const ConnectionObjectRef =
 	builder.objectRef<GraphQLObjects.ConnectionObjectType>("Connection");
 
 function connectionStateToReadable(state: DidExchangeState) {

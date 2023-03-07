@@ -7,7 +7,7 @@ export * from "./LoadingSection";
 export * from "./Modal";
 export * from "./IconButton";
 export * from "./Tooltip";
-export * from "./EmptyConnections";
+export * from "./Empty";
 export * from "./GridBaseColumn";
 export * from "./ErrorBoundary";
 export * from "./Title";

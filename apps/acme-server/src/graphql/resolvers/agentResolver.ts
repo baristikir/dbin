@@ -1,4 +1,6 @@
 import { GraphQLObjects } from "@dbin/server-lib";
+import { ConnectionObjectRef } from "./connectionResolver";
+import { CredentialObjectRef } from "./credentialResolver";
 import { builder } from "../builder";
 
 const AgentObjectRef =
@@ -7,6 +9,18 @@ AgentObjectRef.implement({
 	fields: (t) => ({
 		label: t.string({ resolve: (parent) => parent.config.label }),
 		isInitialized: t.exposeBoolean("isInitialized"),
+		connections: t.field({
+			type: [ConnectionObjectRef],
+			resolve: (_root, _args, { agent }) => {
+				return agent.connections.getAll();
+			},
+		}),
+		credentials: t.field({
+			type: [CredentialObjectRef],
+			resolve: (_root, _args, { agent }) => {
+				return agent.credentials.getAll();
+			},
+		}),
 	}),
 });
 

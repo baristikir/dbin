@@ -36,7 +36,7 @@ export function ConnectionCard({ queryRef }: Props) {
 			/>
 			<div className="col-span-1 flex flex-col items-start justify-start gap-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
 				<div className="flex w-full items-center justify-end">
-					<Button size="sm" variant="primary" onClick={handleDetailsClick}>
+					<Button size="sm" variant="secondary" onClick={handleDetailsClick}>
 						<p className="text-sm">Details</p>
 						<Info className="ml-2 h-4 w-4" />
 					</Button>

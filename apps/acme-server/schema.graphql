@@ -1,4 +1,6 @@
 type Agent {
+  connections: [Connection!]!
+  credentials: [Credential!]!
   isInitialized: Boolean!
   label: String!
 }
@@ -31,12 +33,29 @@ type Connection {
   type: String!
 }
 
+type Credential {
+  connectionId: String
+  id: String!
+  protocolVersion: String!
+  state: String!
+  threadId: String!
+  type: String!
+}
+
 scalar DateTime
 
 type Mutation {
   acceptInvitation(input: ConnectWithAgentInput!): Boolean!
+  proposeCredential(input: ProposeCredentialInput!): Boolean!
   removeConnection(input: RemoveConnectionInput!): Boolean!
   signIn(input: SignInInput!): Boolean!
+}
+
+input ProposeCredentialInput {
+  created_at: String!
+  registered_adress: String!
+  registered_country: String!
+  registered_name: String!
 }
 
 type Query {
