@@ -1,6 +1,6 @@
 import { GraphQLSchema } from 'graphql';
 import { DidInfo, Agent, ConnectionRecord, CredentialExchangeRecord } from '@aries-framework/core';
-import { Schema } from 'indy-sdk';
+import { Schema, CredDef } from 'indy-sdk';
 import * as express from 'express';
 import * as qs from 'qs';
 import * as express_serve_static_core from 'express-serve-static-core';
@@ -25,12 +25,15 @@ interface CredentialObjectType extends CredentialExchangeRecord {
 }
 interface CredentialSchemaObjectType extends Schema {
 }
+interface CredentialDefinitionObjectType extends CredDef {
+}
 
 type schemaObjects_DidObjectType = DidObjectType;
 type schemaObjects_AgentObjectType = AgentObjectType;
 type schemaObjects_ConnectionObjectType = ConnectionObjectType;
 type schemaObjects_CredentialObjectType = CredentialObjectType;
 type schemaObjects_CredentialSchemaObjectType = CredentialSchemaObjectType;
+type schemaObjects_CredentialDefinitionObjectType = CredentialDefinitionObjectType;
 declare namespace schemaObjects {
   export {
     schemaObjects_DidObjectType as DidObjectType,
@@ -38,6 +41,7 @@ declare namespace schemaObjects {
     schemaObjects_ConnectionObjectType as ConnectionObjectType,
     schemaObjects_CredentialObjectType as CredentialObjectType,
     schemaObjects_CredentialSchemaObjectType as CredentialSchemaObjectType,
+    schemaObjects_CredentialDefinitionObjectType as CredentialDefinitionObjectType,
   };
 }
 

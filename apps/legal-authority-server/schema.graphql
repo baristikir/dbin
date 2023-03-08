@@ -1,4 +1,8 @@
 type Agent {
+  credentialDefinition: CredentialDefinition
+
+  """This field resolves the BusinessCredential schema from the ledger."""
+  credentialSchema: CredentialSchema
   isInitialized: Boolean!
   label: String!
 }
@@ -44,6 +48,14 @@ type Credential {
   state: String!
   threadId: String!
   type: String!
+}
+
+type CredentialDefinition {
+  id: String!
+  schemaId: String!
+  tag: String!
+  type: String!
+  ver: String!
 }
 
 type CredentialSchema {

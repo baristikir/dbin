@@ -2,13 +2,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import {
-	Browsers,
-	ListDashes,
-	LockKey,
-	ShieldCheck,
-	Wallet,
-} from "phosphor-react";
+import { Browsers, ListDashes, LockKey, Wallet } from "phosphor-react";
 import { IconButton } from "@dbin/ui";
 
 export function Sidebar() {
@@ -60,17 +54,7 @@ export function Sidebar() {
 						</>
 					)}
 				</NavigationLink>
-				<NavigationLink href="/credentials-schemas">
-					{(state) => (
-						<>
-							<ShieldCheck
-								weight={state === true ? "duotone" : "regular"}
-								className="mr-4 h-5 w-5"
-							/>
-							<p>Credentials Schemas</p>
-						</>
-					)}
-				</NavigationLink>
+
 				<NavigationLink href="/issued-credentials">
 					{(state) => (
 						<>

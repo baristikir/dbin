@@ -2583,53 +2583,8 @@ builder.scalarType("DateTime", {
   }
 });
 
-// src/graphql/resolvers/agentResolver.ts
-var AgentObjectRef = builder.objectRef("Agent");
-AgentObjectRef.implement({
-  fields: (t) => ({
-    label: t.string({ resolve: (parent) => parent.config.label }),
-    isInitialized: t.exposeBoolean("isInitialized")
-  })
-});
-builder.queryField(
-  "agent",
-  (t) => t.field({
-    type: AgentObjectRef,
-    resolve: async (_root, _args, { agent: agent2 }) => {
-      return agent2;
-    }
-  })
-);
-
-// src/graphql/resolvers/connectionResolver.ts
-var import_core2 = require("@aries-framework/core");
+// src/graphql/resolvers/schemaResolver.ts
 var import_afj_services = require("@dbin/afj-services");
-
-// src/subscriptions/connectionsTopics.ts
-var CONNECTION_REQUEST = "connection_request";
-var CONNECTION_ACCEPTED = "connection_accepted";
-var CONNECTION_REJECTED = "connection_rejected";
-var CONNECTION_CLOSED = "connection_closed";
-var CONNECTION_TOPICS = [
-  CONNECTION_REQUEST,
-  CONNECTION_ACCEPTED,
-  CONNECTION_REJECTED,
-  CONNECTION_CLOSED
-];
-
-// src/graphql/resolvers/resultResolver.ts
-var ResultStatus = /* @__PURE__ */ ((ResultStatus2) => {
-  ResultStatus2["SUCCESS"] = "SUCCESS";
-  ResultStatus2["FAILED"] = "FAILED";
-  return ResultStatus2;
-})(ResultStatus || {});
-builder.enumType(ResultStatus, { name: "ResultStatus" });
-var Result = builder.objectRef("Result").implement({
-  fields: (t) => ({
-    status: t.expose("status", { type: ResultStatus }),
-    payload: t.exposeString("message")
-  })
-});
 
 // src/schemas/index.ts
 var import_node_fs = require("fs");
@@ -2663,6 +2618,142 @@ function getSchemaId() {
 function getCredentialDefinitionId() {
   return credentialDefinitionId;
 }
+
+// src/graphql/resolvers/schemaResolver.ts
+var CredentialDefinitionObjectRef = builder.objectRef(
+  "CredentialDefinition"
+);
+CredentialDefinitionObjectRef.implement({
+  fields: (t) => ({
+    id: t.exposeString("id"),
+    schemaId: t.exposeString("schemaId"),
+    tag: t.exposeString("tag"),
+    type: t.exposeString("type"),
+    ver: t.exposeString("ver")
+  })
+});
+var CredentialSchemaRef = builder.objectRef(
+  "CredentialSchema"
+);
+CredentialSchemaRef.implement({
+  fields: (t) => ({
+    id: t.exposeString("id"),
+    seqNo: t.exposeInt("seqNo"),
+    name: t.exposeString("name"),
+    ver: t.exposeString("ver"),
+    version: t.exposeString("version"),
+    attributes: t.exposeStringList("attrNames")
+  })
+});
+builder.queryField(
+  "credentialSchemas",
+  (t) => t.field({
+    type: CredentialSchemaRef,
+    nullable: true,
+    resolve: async (_root, _args, { agent: agent2 }) => {
+      const credentialService = new import_afj_services.CredentialService(agent2);
+      const schemaId2 = getSchemaId();
+      if (!schemaId2) {
+        return null;
+      }
+      return await credentialService.credentialSchema(schemaId2);
+    }
+  })
+);
+
+// src/graphql/resolvers/agentResolver.ts
+var AgentObjectRef = builder.objectRef("Agent");
+AgentObjectRef.implement({
+  fields: (t) => ({
+    label: t.string({ resolve: (parent) => parent.config.label }),
+    isInitialized: t.exposeBoolean("isInitialized"),
+    credentialDefinition: t.field({
+      type: CredentialDefinitionObjectRef,
+      nullable: true,
+      resolve: async (_root, _args, { agent: agent2 }) => {
+        const credentialDefinitionId2 = getCredentialDefinitionId();
+        if (!credentialDefinitionId2) {
+          console.log(
+            "[error]: Credential definition is missing or not configured correctly."
+          );
+          return null;
+        }
+        try {
+          const credDefinition = await agent2.ledger.getCredentialDefinition(
+            credentialDefinitionId2
+          );
+          console.log({
+            credDefinition
+          });
+          return credDefinition ? credDefinition : null;
+        } catch (error) {
+          console.log("[error]: Credential definition not found on ledger.");
+          return null;
+        }
+      }
+    }),
+    credentialSchema: t.field({
+      type: CredentialSchemaRef,
+      description: "This field resolves the BusinessCredential schema from the ledger.",
+      nullable: true,
+      resolve: async (_root, _args, { agent: agent2 }) => {
+        const schemaId2 = getSchemaId();
+        if (!schemaId2) {
+          console.log(
+            "[error]: Credential schema is missing or not configured correctly."
+          );
+          return null;
+        }
+        try {
+          const schema2 = await agent2.ledger.getSchema(schemaId2);
+          return schema2 ? { ...schema2, attrNames: schema2.attrNames.sort() } : null;
+        } catch (error) {
+          console.log("[error]: Credential schema not found on ledger.");
+          return null;
+        }
+      }
+    })
+  })
+});
+builder.queryField(
+  "agent",
+  (t) => t.field({
+    type: AgentObjectRef,
+    resolve: async (_root, _args, { agent: agent2 }) => {
+      return agent2;
+    }
+  })
+);
+
+// src/graphql/resolvers/connectionResolver.ts
+var import_core2 = require("@aries-framework/core");
+var import_afj_services2 = require("@dbin/afj-services");
+
+// src/subscriptions/connectionsTopics.ts
+var CONNECTION_REQUEST = "connection_request";
+var CONNECTION_ACCEPTED = "connection_accepted";
+var CONNECTION_REJECTED = "connection_rejected";
+var CONNECTION_CLOSED = "connection_closed";
+var CONNECTION_TOPICS = [
+  CONNECTION_REQUEST,
+  CONNECTION_ACCEPTED,
+  CONNECTION_REJECTED,
+  CONNECTION_CLOSED
+];
+
+// src/graphql/resolvers/resultResolver.ts
+var ResultStatus = /* @__PURE__ */ ((ResultStatus2) => {
+  ResultStatus2["SUCCESS"] = "SUCCESS";
+  ResultStatus2["FAILED"] = "FAILED";
+  return ResultStatus2;
+})(ResultStatus || {});
+builder.enumType(ResultStatus, { name: "ResultStatus" });
+var Result = builder.objectRef("Result").implement({
+  fields: (t) => ({
+    status: t.expose("status", { type: ResultStatus }),
+    payload: t.exposeString("message")
+  })
+});
 
 // src/graphql/resolvers/connectionResolver.ts
 var ConnectionObjectRef = builder.objectRef("Connection");
@@ -2755,7 +2846,7 @@ builder.queryField(
       })
     },
     resolve: async (_root, { filter }, { agent: agent2 }) => {
-      const connectionServices = new import_afj_services.ConnectionService(agent2);
+      const connectionServices = new import_afj_services2.ConnectionService(agent2);
       return await connectionServices.allConnections({
         ...filter
       });
@@ -2770,7 +2861,7 @@ builder.queryField(
       id: t.arg.string()
     },
     resolve: async (_root, { id }, { agent: agent2 }) => {
-      const connectionService = new import_afj_services.ConnectionService(agent2);
+      const connectionService = new import_afj_services2.ConnectionService(agent2);
       const connection = await connectionService.connectionById(id);
       return connection;
     }
@@ -2781,7 +2872,7 @@ builder.mutationField(
   (t) => t.field({
     type: "String",
     resolve: async (_root, _args, { agent: agent2 }) => {
-      const connectionServices = new import_afj_services.ConnectionService(agent2);
+      const connectionServices = new import_afj_services2.ConnectionService(agent2);
       const { invitationUrl, outOfBandRecord } = await connectionServices.createInvitation(
         "http://localhost:8000/invitation"
       );
@@ -2802,7 +2893,7 @@ builder.mutationField(
       input: t.arg({ type: RemoveConnectionInput })
     },
     resolve: async (_root, { input }, { agent: agent2 }) => {
-      const connectionServices = new import_afj_services.ConnectionService(agent2);
+      const connectionServices = new import_afj_services2.ConnectionService(agent2);
       const removeState = await connectionServices.removeConnection(
         input.connectionId
       );
@@ -2834,14 +2925,14 @@ builder.mutationField(
       input: t.arg({ type: IssueCredentialInput })
     },
     resolve: async (_root, { input }, { agent: agent2 }) => {
-      const connectionService = new import_afj_services.ConnectionService(agent2);
+      const connectionService = new import_afj_services2.ConnectionService(agent2);
       const connectionRecord = await connectionService.connectionById(
         input.connectionId
       );
       if (!connectionRecord) {
         throw new Error("No such connection found.");
       }
-      const credentialService = new import_afj_services.CredentialService(agent2);
+      const credentialService = new import_afj_services2.CredentialService(agent2);
       const credentialDefinitionId2 = getCredentialDefinitionId();
       if (!credentialDefinitionId2) {
         throw new Error(
@@ -2865,7 +2956,7 @@ builder.mutationField(
 );
 
 // src/graphql/resolvers/credentialResolver.ts
-var import_afj_services2 = require("@dbin/afj-services");
+var import_afj_services3 = require("@dbin/afj-services");
 var CredentialObjectRef = builder.objectRef("Credential");
 CredentialObjectRef.implement({
   fields: (t) => ({
@@ -2885,7 +2976,7 @@ builder.queryField(
     type: [CredentialObjectRef],
     args: {},
     resolve: async (_root, {}, { agent: agent2 }) => {
-      const credentialService = new import_afj_services2.CredentialService(agent2);
+      const credentialService = new import_afj_services3.CredentialService(agent2);
       const credentials = await credentialService.allCredentials();
       return credentials;
     }
@@ -2948,37 +3039,6 @@ builder.mutationField(
         didAndSeed.did
       );
       return didAndSeed;
-    }
-  })
-);
-
-// src/graphql/resolvers/schemaResolver.ts
-var import_afj_services3 = require("@dbin/afj-services");
-var CredentialSchemaRef = builder.objectRef(
-  "CredentialSchema"
-);
-CredentialSchemaRef.implement({
-  fields: (t) => ({
-    id: t.exposeString("id"),
-    seqNo: t.exposeInt("seqNo"),
-    name: t.exposeString("name"),
-    ver: t.exposeString("ver"),
-    version: t.exposeString("version"),
-    attributes: t.exposeStringList("attrNames")
-  })
-});
-builder.queryField(
-  "credentialSchemas",
-  (t) => t.field({
-    type: CredentialSchemaRef,
-    nullable: true,
-    resolve: async (_root, _args, { agent: agent2 }) => {
-      const credentialService = new import_afj_services3.CredentialService(agent2);
-      const schemaId2 = getSchemaId();
-      if (!schemaId2) {
-        return null;
-      }
-      return await credentialService.credentialSchema(schemaId2);
     }
   })
 );

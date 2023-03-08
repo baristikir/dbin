@@ -1,9 +1,24 @@
 import { CredentialService } from "@dbin/afj-services";
 import { GraphQLObjects } from "@dbin/server-lib";
 import { builder } from "../builder";
-import { getCredentialDefinitionId, getSchemaId } from "../../schemas";
+import { getSchemaId } from "../../schemas";
 
-const CredentialSchemaRef =
+export const CredentialDefinitionObjectRef =
+	builder.objectRef<GraphQLObjects.CredentialDefinitionObjectType>(
+		"CredentialDefinition"
+	);
+CredentialDefinitionObjectRef.implement({
+	fields: (t) => ({
+		id: t.exposeString("id"),
+		schemaId: t.exposeString("schemaId"),
+		tag: t.exposeString("tag"),
+		type: t.exposeString("type"),
+		// value: t.exposeString("value"),
+		ver: t.exposeString("ver"),
+	}),
+});
+
+export const CredentialSchemaRef =
 	builder.objectRef<GraphQLObjects.CredentialSchemaObjectType>(
 		"CredentialSchema"
 	);
