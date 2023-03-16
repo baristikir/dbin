@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<e53f361c1361e89cfe68e8a7db2bbee6>>
+ * @generated SignedSource<<87279cd18d361195ec6c3ecff72cf3b2>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -17,7 +17,7 @@ export type IssueCredentialConnectionQuery$data = {
   readonly connection: {
     readonly id: string;
     readonly " $fragmentSpreads": FragmentRefs<"IssueCredentialConnectionInfo_connection">;
-  };
+  } | null;
 };
 export type IssueCredentialConnectionQuery = {
   response: IssueCredentialConnectionQuery$data;

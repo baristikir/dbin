@@ -17,8 +17,10 @@ AgentObjectRef.implement({
 		}),
 		credentials: t.field({
 			type: [CredentialObjectRef],
-			resolve: (_root, _args, { agent }) => {
-				return agent.credentials.getAll();
+			resolve: async (_root, _args, { agent }) => {
+				const creds = await agent.credentials.getAll();
+				console.log(creds);
+				return creds;
 			},
 		}),
 	}),

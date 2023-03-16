@@ -1,4 +1,5 @@
-import { CredentialService } from "@dbin/afj-services";
+import { V2CredentialPreview } from "@aries-framework/core";
+import { ConnectionService, CredentialService } from "@dbin/afj-services";
 import { GraphQLObjects } from "@dbin/server-lib";
 import { z } from "zod";
 import { builder } from "../builder";
@@ -20,6 +21,7 @@ CredentialObjectRef.implement({
 
 const ProposeCredentialInput = builder.inputType("ProposeCredentialInput", {
 	fields: (t) => ({
+		connectionId: t.string(),
 		registered_name: t.string(),
 		registered_country: t.string(),
 		registered_adress: t.string(),
@@ -44,6 +46,7 @@ builder.mutationField("proposeCredential", (t) =>
 		},
 		resolve: async (_root, { input }, { agent }) => {
 			const credentialServices = new CredentialService(agent);
+			const connectionServices = new ConnectionService(agent);
 
 			const attributes = {
 				registered_name: input.registered_name,
@@ -60,15 +63,59 @@ builder.mutationField("proposeCredential", (t) =>
 				throw new Error("Input args do not match with credential definition.");
 			}
 
-			// const formatInputForSchema = (
-			// 	input: T extends typeof ProposeCredentialInput[infer U] ? U : never
-			// ) => {};
+			const connectionRecord = await connectionServices.connectionById(
+				input.connectionId
+			);
+			if (!connectionRecord) {
+				throw new Error("No such connection record was found in agents storage.");
+			}
 
-			// const {} = await credentialServices.proposeCredential({
-			// 	...input,
-			// });
+			const credentialPreview = V2CredentialPreview.fromRecord({
+				company_creation_date: attributes.created_at.toString(),
+				company_registered_name: attributes.registered_name,
+				company_registered_adress: attributes.registered_adress,
+				company_registered_country: attributes.registered_country,
+				company_status: "active",
+			});
 
-			return false;
+			const proposal = await credentialServices.proposeCredential({
+				connectionId: input.connectionId,
+				credentialFormats: {
+					indy: {
+						attributes: credentialPreview.attributes,
+						schemaIssuerDid: "SYiUQo2fGYKkUqk7evkJT1",
+						schemaName: "BusinessCredential",
+						schemaVersion: "1.0",
+						schemaId: "SYiUQo2fGYKkUqk7evkJT1:2:BusinessCredential:1.0",
+						issuerDid: "SYiUQo2fGYKkUqk7evkJT1",
+						credentialDefinitionId:
+							"SYiUQo2fGYKkUqk7evkJT1:3:CL:13157:BusinessCredentialDefinition",
+					},
+				},
+			});
+
+			return true;
+		},
+	})
+);
+
+const PresentProofInput = builder.inputType("PresentProofInput", {
+	fields: (t) => ({
+		connectionId: t.string(),
+		credentialId: t.string(),
+	}),
+});
+builder.mutationField("presentProof", (t) =>
+	t.field({
+		type: "Boolean",
+		args: {
+			input: t.arg({ type: PresentProofInput }),
+		},
+		resolve: async (_root, { input }, { agent }) => {
+			const credentialServices = new CredentialService(agent);
+			const proof = await credentialServices.presentProof(input);
+
+			return proof ? true : false;
 		},
 	})
 );

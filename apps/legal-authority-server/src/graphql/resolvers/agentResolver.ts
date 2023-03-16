@@ -1,8 +1,9 @@
 import { GraphQLObjects } from "@dbin/server-lib";
 import { CredentialSchemaRef } from "./schemaResolver";
-import { getSchemaId, getCredentialDefinitionId } from "../../schemas";
 import { builder } from "../builder";
 import { CredentialDefinitionObjectRef } from "./schemaResolver";
+import { ConnectionObjectRef } from "./connectionResolver";
+import { getSchemaId, getCredentialDefinitionId } from "../../schemas";
 
 const AgentObjectRef =
 	builder.objectRef<GraphQLObjects.AgentObjectType>("Agent");
@@ -10,6 +11,12 @@ AgentObjectRef.implement({
 	fields: (t) => ({
 		label: t.string({ resolve: (parent) => parent.config.label }),
 		isInitialized: t.exposeBoolean("isInitialized"),
+		connections: t.field({
+			type: [ConnectionObjectRef],
+			resolve: async (_root, _args, { agent }) => {
+				return await agent.connections.getAll();
+			},
+		}),
 		credentialDefinition: t.field({
 			type: CredentialDefinitionObjectRef,
 			nullable: true,

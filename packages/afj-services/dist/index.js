@@ -112,6 +112,9 @@ async function createAgent({ config, indyLedgers }) {
     modules: {
       connections: new import_core.ConnectionsModule({
         autoAcceptConnections: true
+      }),
+      credentials: new import_core.CredentialsModule({
+        autoAcceptCredentials: import_core.AutoAcceptCredential.ContentApproved
       })
     }
   });
@@ -166,9 +169,18 @@ var CredentialService = class extends ServiceWithAgent {
     const creds = await this.agent.credentials.getAll();
     return creds;
   }
+  async credentialById(credentialId) {
+    try {
+      const credentialRecord = await this.agent.credentials.findById(credentialId);
+      return credentialRecord;
+    } catch (error) {
+      console.log(`[info]: Credential with ${credentialId} id not found..`);
+      return null;
+    }
+  }
   async issueCredential({
     attributes,
-    protocolVersion,
+    protocolVersion = "v2",
     credentialDefinitionId
   }) {
     return await this.agent.credentials.createOffer({
@@ -180,6 +192,110 @@ var CredentialService = class extends ServiceWithAgent {
         }
       }
     });
+  }
+  async proposeCredential({
+    ...props
+  }) {
+    const credentialExchangeRecord = await this.agent.credentials.proposeCredential({
+      ...props,
+      protocolVersion: "v1",
+      autoAcceptCredential: import_core2.AutoAcceptCredential.ContentApproved
+    });
+    return credentialExchangeRecord;
+  }
+  async acceptProposal(credentialRecordId) {
+    try {
+      console.log({ credentialRecordId });
+      const credentialPayload = await this.agent.credentials.getFormatData(
+        credentialRecordId
+      );
+      console.log({ credentialPayload });
+      return await this.agent.credentials.acceptProposal({
+        credentialRecordId,
+        credentialFormats: {
+          indy: {
+            credentialDefinitionId: credentialPayload.proposal.indy.cred_def_id,
+            attributes: [...credentialPayload.proposalAttributes]
+          }
+        }
+      });
+    } catch (error) {
+      console.log(
+        `[error]: Accepting credential proposal with ${credentialRecordId} id failed.`
+      );
+      console.log(`[error]: `, error);
+      return null;
+    }
+  }
+  async presentProof({
+    connectionId,
+    credentialId
+  }) {
+    const [credential] = await (await this.agent.credentials.getAll()).filter((cred) => cred.id === credentialId && cred.state === "done");
+    const credentialData = await this.agent.credentials.getFormatData(
+      credential.id
+    );
+    const previewAttributes = new import_core2.PresentationPreview({
+      attributes: credentialData.offerAttributes.map((attr) => {
+        return new import_core2.PresentationPreviewAttribute({
+          name: attr.name,
+          value: attr.value,
+          mimeType: attr.value
+        });
+      })
+    });
+    return await this.agent.proofs.proposeProof({
+      protocolVersion: "v2",
+      connectionId,
+      proofFormats: {
+        indy: {
+          attributes: previewAttributes.attributes
+        }
+      }
+    });
+  }
+  async createConnectionlessProof({
+    credentialId
+  }) {
+    try {
+      const credentialRecord = await this.agent.credentials.getById(credentialId);
+      const previewAttributes = /* @__PURE__ */ new Map();
+      credentialRecord.credentialAttributes.map(
+        (attr) => previewAttributes.set(
+          attr.name,
+          new import_core2.ProofAttributeInfo({
+            name: attr.name,
+            restrictions: []
+          })
+        )
+      );
+      const { message, proofRecord } = await this.agent.proofs.createRequest({
+        protocolVersion: "v2",
+        proofFormats: {
+          indy: {
+            name: "args_name",
+            version: "args_version",
+            nonce: String(new Date().getTime()),
+            requestedAttributes: previewAttributes
+          }
+        }
+      });
+      const { invitationUrl, message: connectionlessMessage } = await this.agent.oob.createLegacyConnectionlessInvitation({
+        domain: "args_domain",
+        recordId: proofRecord.id,
+        message
+      });
+      return { invitationUrl, connectionlessMessage };
+    } catch (error) {
+      console.log(
+        "[createConnectionlessProof()]: Error Credential Record not found."
+      );
+      console.log(error);
+      return null;
+    }
+  }
+  async revokeCredential({}) {
+    throw new Error("Not implemented yet.");
   }
 };
 
@@ -225,15 +341,33 @@ var ConnectionService = class extends ServiceWithAgent {
     return connectionRecords;
   }
   async connectionById(connectionId, filter) {
-    const connectionRecord = await this.agent.connections.findById(connectionId);
-    return connectionRecord;
+    try {
+      const connectionRecord = await this.agent.connections.findById(connectionId);
+      return connectionRecord;
+    } catch (error) {
+      console.log(
+        `[info]: Connection record with ${connectionId} id could not be found.`
+      );
+      return null;
+    }
+  }
+  async hasConnection(connectionId) {
+    let connectionRecord;
+    try {
+      connectionRecord = await this.agent.connections.findById(connectionId);
+      return true;
+    } catch (error) {
+      console.log(
+        "[ConnectionServices] hasConnection -> No Connection was found. Error:",
+        error
+      );
+      return false;
+    }
   }
   async removeConnection(connectionOrId) {
     let connectionRecord;
     if (typeof connectionOrId === "string") {
-      connectionRecord = await this.agent.connections.findById(
-        connectionOrId
-      );
+      connectionRecord = await this.agent.connections.findById(connectionOrId);
       if (connectionRecord === null) {
         console.log(
           `[connection.services] Connection record couldn't be found with id '${connectionOrId}'`
@@ -241,11 +375,12 @@ var ConnectionService = class extends ServiceWithAgent {
         return false;
       }
     } else {
+      const isConnected = await this.hasConnection(connectionOrId.id);
+      if (isConnected === false)
+        throw new Error("Connection not found in Agents Wallet.");
       connectionRecord = connectionOrId;
     }
-    await this.agent.connections.deleteById(
-      connectionRecord.id
-    );
+    await this.agent.connections.deleteById(connectionRecord.id);
     return true;
   }
 };

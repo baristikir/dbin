@@ -1,8 +1,11 @@
+import { CredentialState } from "@aries-framework/core";
 import { GraphQLObjects } from "@dbin/server-lib";
+import { ConnectionService } from "@dbin/afj-services";
 import { CredentialService } from "@dbin/afj-services";
 import { builder } from "../builder";
+import { Result, ResultStatus } from "./resultResolver";
 
-const CredentialObjectRef =
+export const CredentialObjectRef =
 	builder.objectRef<GraphQLObjects.CredentialObjectType>("Credential");
 CredentialObjectRef.implement({
 	fields: (t) => ({
@@ -38,6 +41,60 @@ builder.queryField("credentialByConnection", (t) =>
 		},
 		resolve: async (_root, {}, { agent }) => {
 			throw new Error("Not implemented yet.");
+		},
+	})
+);
+
+const AcceptProposalInput = builder.inputType("AcceptProposalInput", {
+	fields: (t) => ({
+		connectionId: t.string(),
+		credentialId: t.string(),
+	}),
+});
+
+builder.mutationField("acceptProposal", (t) =>
+	t.field({
+		type: Result,
+		args: {
+			input: t.arg({ type: AcceptProposalInput }),
+		},
+		resolve: async (_root, { input }, { agent }) => {
+			const credentialServices = new CredentialService(agent);
+			const connectionServices = new ConnectionService(agent);
+
+			const connectionRecord = await connectionServices.connectionById(
+				input.connectionId
+			);
+			if (!connectionRecord) {
+				return { status: ResultStatus.FAILED, message: "Connection not found" };
+			}
+
+			const credentialRecord = await credentialServices.credentialById(
+				input.credentialId
+			);
+			if (
+				!credentialRecord ||
+				credentialRecord.connectionId !== input.connectionId
+			) {
+				return { status: ResultStatus.FAILED, message: "Credential not found" };
+			}
+
+			if (credentialRecord.state !== CredentialState.ProposalReceived) {
+				return {
+					status: ResultStatus.FAILED,
+					message: "Credential state does not match with proposal-received",
+				};
+			}
+
+			const updatedCredentialRecord = await credentialServices.acceptProposal(
+				input.credentialId
+			);
+			console.log(updatedCredentialRecord);
+
+			return {
+				status: ResultStatus.SUCCESS,
+				message: "Credential proposal was accepted successfully.",
+			};
 		},
 	})
 );

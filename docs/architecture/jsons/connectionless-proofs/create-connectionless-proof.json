@@ -1,0 +1,19 @@
+{
+	"@id": "3b67c4bf-3953-4ace-94ef-28e0969288c5",
+	"@type": "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/request-presentation",
+	"request_presentations~attach": [
+		{
+			"@id": "libindy-request-presentation-0",
+			"mime-type": "application/json",
+			"data": {
+				"base64": "eyJuYW1lIjo..."
+			}
+		}
+	],
+	"comment": null,
+	"~service": {
+		"recipientKeys": ["F2fFPEXABoPKt8mYjNAavBwbsmQKYqNTcv3HKqBgqpLw"],
+		"routingKeys": null,
+		"serviceEndpoint": "https://my-url.test.org"
+	}
+}

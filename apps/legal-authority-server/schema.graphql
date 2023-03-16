@@ -1,4 +1,10 @@
+input AcceptProposalInput {
+  connectionId: String!
+  credentialId: String!
+}
+
 type Agent {
+  connections: [Connection!]!
   credentialDefinition: CredentialDefinition
 
   """This field resolves the BusinessCredential schema from the ledger."""
@@ -19,6 +25,7 @@ type Connection {
   isReady: Boolean!
   isRequester: Boolean!
   mediatorId: String
+  messages: [ConnectionCredentialMessage!]!
   oobId: String
   protocol: String
   protocolVersion: String
@@ -30,6 +37,28 @@ type Connection {
   theirLabel: String
   threadId: String
   type: String!
+}
+
+type ConnectionCredentialMessage {
+  attributes: [ConnectionCredentialProposalAttribute!]!
+  credentialId: String!
+  credentialState: String!
+  proposal: ConnectionCredentialProposal!
+}
+
+type ConnectionCredentialProposal {
+  credentialDefinitionId: String!
+  issuerDid: String!
+  schemaId: String!
+  schemaIssuerDid: String!
+  schemaName: String!
+  schemaVersion: String!
+}
+
+type ConnectionCredentialProposalAttribute {
+  mime: String!
+  name: String!
+  value: String!
 }
 
 input ConnectionsFilterInput {
@@ -85,6 +114,7 @@ input IssueCredentialInput {
 }
 
 type Mutation {
+  acceptProposal(input: AcceptProposalInput!): Result!
   createDid: Did! @deprecated(reason: "Not compatible with afj-0.3.x version")
   createInvitation: String!
   issueCredential(input: IssueCredentialInput!): Result!
@@ -93,7 +123,7 @@ type Mutation {
 
 type Query {
   agent: Agent!
-  connection(id: String!): Connection!
+  connection(id: String!): Connection
   connections(filter: ConnectionsFilterInput): [Connection!]!
   credentialByConnection(connectionId: String!): [Credential!]!
   credentialSchemas: CredentialSchema

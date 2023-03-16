@@ -49,7 +49,6 @@ type Mutation {
   presentProof(input: PresentProofInput!): Boolean!
   proposeCredential(input: ProposeCredentialInput!): Boolean!
   removeConnection(input: RemoveConnectionInput!): Boolean!
-  signIn(input: SignInInput!): Boolean!
 }
 
 input PresentProofInput {
@@ -68,14 +67,8 @@ input ProposeCredentialInput {
 type Query {
   agent: Agent!
   connections: [Connection!]!
-  me: Boolean!
 }
 
 input RemoveConnectionInput {
   id: String!
-}
-
-input SignInInput {
-  email: String!
-  password: String!
 }

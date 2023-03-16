@@ -1,9 +1,11 @@
 import { z } from "zod";
-import { graphql, useMutation } from "react-relay";
-import { Form, Input, Modal, SubmitButton, useZodForm } from "@dbin/ui";
+import { graphql, useFragment, useMutation } from "react-relay";
+import { Form, Input, Modal, Select, SubmitButton, useZodForm } from "@dbin/ui";
 import { ProposeNewCredentialModalMutation } from "../../../__generated__/ProposeNewCredentialModalMutation.graphql";
+import { ProposeNewCredentialModal_connection$key } from "../../../__generated__/ProposeNewCredentialModal_connection.graphql";
 
 const proposeCredentialSchema = z.object({
+	connectionId: z.string().min(1),
 	registered_name: z.string().min(1),
 	registered_adress: z.string().min(1),
 	registered_country: z.string().min(1),
@@ -13,13 +15,40 @@ const proposeCredentialSchema = z.object({
 });
 
 interface Props {
+	queryRef: ProposeNewCredentialModal_connection$key;
 	isOpen: boolean;
 	setIsOpen(value: boolean): void;
 }
-export const ProposeNewCredentialModal = ({ isOpen, setIsOpen }: Props) => {
-	// const [fetchKey] = useAtom(readHomeFetchKeyAtom);
-	// const [, setFetchKey] = useAtom(handleHomeFetchKeyUpdateAtom);
-
+export const ProposeNewCredentialModal = ({
+	queryRef,
+	isOpen,
+	setIsOpen,
+}: Props) => {
+	const data = useFragment(
+		graphql`
+			fragment ProposeNewCredentialModal_connection on Connection
+			@relay(plural: true) {
+				id
+				state
+				isStateCompleted
+				role
+				protocol
+				protocolVersion
+				did
+				theirDid
+				theirLabel
+				threadId
+				invitationDid
+				oobId
+				mediatorId
+				isReady
+				isRequester
+				autoAcceptConnection
+				errMessage
+			}
+		`,
+		queryRef
+	);
 	const form = useZodForm({
 		schema: proposeCredentialSchema,
 	});
@@ -43,6 +72,7 @@ export const ProposeNewCredentialModal = ({ isOpen, setIsOpen }: Props) => {
 						<Form
 							form={form}
 							onSubmit={(values) => {
+								console.log(values);
 								return new Promise((res, rej) => {
 									proposeCredential({
 										variables: {
@@ -53,18 +83,30 @@ export const ProposeNewCredentialModal = ({ isOpen, setIsOpen }: Props) => {
 										},
 										updater: (cache, data) => {
 											res(data.proposeCredential);
-											// if (data.acceptInvitation) {
-											// 	cache.invalidateStore();
-											// 	setFetchKey(fetchKey + 1);
-											// 	form.reset();
-											// 	return res(setIsOpen(false));
-											// }
-											// rej("Something failed");
 										},
 									});
 								});
 							}}
 						>
+							<Select
+								placeholder="Select a connection"
+								label="Connection"
+								{...form.register("connectionId")}
+							>
+								<option
+									value={undefined}
+									hidden
+									className="text-gray-300 placeholder:text-gray-300"
+								>
+									Select a connection
+								</option>
+								{data.map((connection, idx) => (
+									<option key={connection.id} selected={false} value={connection.id}>
+										{connection.theirLabel +
+											` (id: ${connection.id.substring(0, 10)}...)`}
+									</option>
+								))}
+							</Select>
 							<Input
 								label="Business Registered Name"
 								placeholder="ACME Corporation Inc."

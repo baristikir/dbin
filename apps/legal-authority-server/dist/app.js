@@ -2525,11 +2525,11 @@ var import_dotenv = __toESM(require_main());
 // src/server.ts
 var import_express = __toESM(require("express"));
 var import_morgan = __toESM(require("morgan"));
-var import_core5 = require("@aries-framework/core");
+var import_core6 = require("@aries-framework/core");
 var import_node2 = require("@aries-framework/node");
 var import_ws = require("ws");
 var import_ws2 = require("graphql-ws/lib/use/ws");
-var import_afj_services4 = require("@dbin/afj-services");
+var import_afj_services5 = require("@dbin/afj-services");
 var import_graphql_yoga2 = require("graphql-yoga");
 
 // src/graphql/index.ts
@@ -2661,70 +2661,6 @@ builder.queryField(
   })
 );
 
-// src/graphql/resolvers/agentResolver.ts
-var AgentObjectRef = builder.objectRef("Agent");
-AgentObjectRef.implement({
-  fields: (t) => ({
-    label: t.string({ resolve: (parent) => parent.config.label }),
-    isInitialized: t.exposeBoolean("isInitialized"),
-    credentialDefinition: t.field({
-      type: CredentialDefinitionObjectRef,
-      nullable: true,
-      resolve: async (_root, _args, { agent: agent2 }) => {
-        const credentialDefinitionId2 = getCredentialDefinitionId();
-        if (!credentialDefinitionId2) {
-          console.log(
-            "[error]: Credential definition is missing or not configured correctly."
-          );
-          return null;
-        }
-        try {
-          const credDefinition = await agent2.ledger.getCredentialDefinition(
-            credentialDefinitionId2
-          );
-          console.log({
-            credDefinition
-          });
-          return credDefinition ? credDefinition : null;
-        } catch (error) {
-          console.log("[error]: Credential definition not found on ledger.");
-          return null;
-        }
-      }
-    }),
-    credentialSchema: t.field({
-      type: CredentialSchemaRef,
-      description: "This field resolves the BusinessCredential schema from the ledger.",
-      nullable: true,
-      resolve: async (_root, _args, { agent: agent2 }) => {
-        const schemaId2 = getSchemaId();
-        if (!schemaId2) {
-          console.log(
-            "[error]: Credential schema is missing or not configured correctly."
-          );
-          return null;
-        }
-        try {
-          const schema2 = await agent2.ledger.getSchema(schemaId2);
-          return schema2 ? { ...schema2, attrNames: schema2.attrNames.sort() } : null;
-        } catch (error) {
-          console.log("[error]: Credential schema not found on ledger.");
-          return null;
-        }
-      }
-    })
-  })
-});
-builder.queryField(
-  "agent",
-  (t) => t.field({
-    type: AgentObjectRef,
-    resolve: async (_root, _args, { agent: agent2 }) => {
-      return agent2;
-    }
-  })
-);
-
 // src/graphql/resolvers/connectionResolver.ts
 var import_core2 = require("@aries-framework/core");
 var import_afj_services2 = require("@dbin/afj-services");
@@ -2774,6 +2710,35 @@ function getConnectionProtocolVersion(protocol) {
     return null;
   return protocol.endsWith("/1.0") ? "v1" : protocol.endsWith("/2.0") ? "v2" : null;
 }
+var ConnectionCredentialProposalRef = builder.objectRef("ConnectionCredentialProposal").implement({
+  fields: (t) => ({
+    credentialDefinitionId: t.exposeString("cred_def_id"),
+    schemaId: t.exposeString("schema_id"),
+    schemaIssuerDid: t.exposeString("schema_issuer_did"),
+    schemaName: t.exposeString("schema_name"),
+    schemaVersion: t.exposeString("schema_version"),
+    issuerDid: t.exposeString("issuer_did")
+  })
+});
+var ConnectionCredentialProposalAttributeRef = builder.objectRef(
+  "ConnectionCredentialProposalAttribute"
+).implement({
+  fields: (t) => ({
+    mime: t.exposeString("mimeType"),
+    name: t.exposeString("name"),
+    value: t.exposeString("value")
+  })
+});
+var ConnectionCredentialMessageRef = builder.objectRef("ConnectionCredentialMessage").implement({
+  fields: (t) => ({
+    credentialId: t.exposeString("credentialId"),
+    credentialState: t.exposeString("credentialState"),
+    proposal: t.expose("proposal", { type: ConnectionCredentialProposalRef }),
+    attributes: t.expose("proposalAttributes", {
+      type: [ConnectionCredentialProposalAttributeRef]
+    })
+  })
+});
 ConnectionObjectRef.implement({
   fields: (t) => ({
     id: t.exposeString("id", {
@@ -2818,6 +2783,35 @@ ConnectionObjectRef.implement({
     }),
     isRequester: t.boolean({
       resolve: (parent) => parent.isRequester
+    }),
+    messages: t.field({
+      type: [ConnectionCredentialMessageRef],
+      resolve: async (parent, _args, { agent: agent2 }) => {
+        const credentials = await agent2.credentials.getAll();
+        const credentialsByConnection = credentials.filter(
+          (credential) => credential.connectionId === parent.id
+        );
+        let credsData = [];
+        for (const credential of credentialsByConnection) {
+          const credentialPayload = await agent2.credentials.getFormatData(
+            credential.id
+          );
+          credsData.push({
+            ...credentialPayload,
+            credentialId: credential.id,
+            credentialState: credential.state
+          });
+        }
+        const payload = credsData.map((credential, idx) => ({
+          credentialId: credential.credentialId,
+          credentialState: credential.credentialState,
+          proposal: {
+            ...credential.proposal.indy
+          },
+          proposalAttributes: credential.proposalAttributes
+        }));
+        return payload;
+      }
     })
   })
 });
@@ -2857,6 +2851,7 @@ builder.queryField(
   "connection",
   (t) => t.field({
     type: ConnectionObjectRef,
+    nullable: true,
     args: {
       id: t.arg.string()
     },
@@ -2955,8 +2950,80 @@ builder.mutationField(
   })
 );
 
+// src/graphql/resolvers/agentResolver.ts
+var AgentObjectRef = builder.objectRef("Agent");
+AgentObjectRef.implement({
+  fields: (t) => ({
+    label: t.string({ resolve: (parent) => parent.config.label }),
+    isInitialized: t.exposeBoolean("isInitialized"),
+    connections: t.field({
+      type: [ConnectionObjectRef],
+      resolve: async (_root, _args, { agent: agent2 }) => {
+        return await agent2.connections.getAll();
+      }
+    }),
+    credentialDefinition: t.field({
+      type: CredentialDefinitionObjectRef,
+      nullable: true,
+      resolve: async (_root, _args, { agent: agent2 }) => {
+        const credentialDefinitionId2 = getCredentialDefinitionId();
+        if (!credentialDefinitionId2) {
+          console.log(
+            "[error]: Credential definition is missing or not configured correctly."
+          );
+          return null;
+        }
+        try {
+          const credDefinition = await agent2.ledger.getCredentialDefinition(
+            credentialDefinitionId2
+          );
+          console.log({
+            credDefinition
+          });
+          return credDefinition ? credDefinition : null;
+        } catch (error) {
+          console.log("[error]: Credential definition not found on ledger.");
+          return null;
+        }
+      }
+    }),
+    credentialSchema: t.field({
+      type: CredentialSchemaRef,
+      description: "This field resolves the BusinessCredential schema from the ledger.",
+      nullable: true,
+      resolve: async (_root, _args, { agent: agent2 }) => {
+        const schemaId2 = getSchemaId();
+        if (!schemaId2) {
+          console.log(
+            "[error]: Credential schema is missing or not configured correctly."
+          );
+          return null;
+        }
+        try {
+          const schema2 = await agent2.ledger.getSchema(schemaId2);
+          return schema2 ? { ...schema2, attrNames: schema2.attrNames.sort() } : null;
+        } catch (error) {
+          console.log("[error]: Credential schema not found on ledger.");
+          return null;
+        }
+      }
+    })
+  })
+});
+builder.queryField(
+  "agent",
+  (t) => t.field({
+    type: AgentObjectRef,
+    resolve: async (_root, _args, { agent: agent2 }) => {
+      return agent2;
+    }
+  })
+);
+
 // src/graphql/resolvers/credentialResolver.ts
+var import_core3 = require("@aries-framework/core");
 var import_afj_services3 = require("@dbin/afj-services");
+var import_afj_services4 = require("@dbin/afj-services");
 var CredentialObjectRef = builder.objectRef("Credential");
 CredentialObjectRef.implement({
   fields: (t) => ({
@@ -2976,7 +3043,7 @@ builder.queryField(
     type: [CredentialObjectRef],
     args: {},
     resolve: async (_root, {}, { agent: agent2 }) => {
-      const credentialService = new import_afj_services3.CredentialService(agent2);
+      const credentialService = new import_afj_services4.CredentialService(agent2);
       const credentials = await credentialService.allCredentials();
       return credentials;
     }
@@ -2994,15 +3061,60 @@ builder.queryField(
     }
   })
 );
+var AcceptProposalInput = builder.inputType("AcceptProposalInput", {
+  fields: (t) => ({
+    connectionId: t.string(),
+    credentialId: t.string()
+  })
+});
+builder.mutationField(
+  "acceptProposal",
+  (t) => t.field({
+    type: Result,
+    args: {
+      input: t.arg({ type: AcceptProposalInput })
+    },
+    resolve: async (_root, { input }, { agent: agent2 }) => {
+      const credentialServices = new import_afj_services4.CredentialService(agent2);
+      const connectionServices = new import_afj_services3.ConnectionService(agent2);
+      const connectionRecord = await connectionServices.connectionById(
+        input.connectionId
+      );
+      if (!connectionRecord) {
+        return { status: "FAILED" /* FAILED */, message: "Connection not found" };
+      }
+      const credentialRecord = await credentialServices.credentialById(
+        input.credentialId
+      );
+      if (!credentialRecord || credentialRecord.connectionId !== input.connectionId) {
+        return { status: "FAILED" /* FAILED */, message: "Credential not found" };
+      }
+      if (credentialRecord.state !== import_core3.CredentialState.ProposalReceived) {
+        return {
+          status: "FAILED" /* FAILED */,
+          message: "Credential state does not match with proposal-received"
+        };
+      }
+      const updatedCredentialRecord = await credentialServices.acceptProposal(
+        input.credentialId
+      );
+      console.log(updatedCredentialRecord);
+      return {
+        status: "SUCCESS" /* SUCCESS */,
+        message: "Credential proposal was accepted successfully."
+      };
+    }
+  })
+);
 
 // src/utils/wallet.ts
-var import_core3 = require("@aries-framework/core");
+var import_core4 = require("@aries-framework/core");
 var import_node = require("@aries-framework/node");
 var import_node_crypto = require("crypto");
 async function createSeed(agent2) {
   const seed = (0, import_node_crypto.randomBytes)(16).toString("hex");
   const wallet = agent2.dependencyManager.resolve(
-    import_core3.InjectionSymbols.Wallet
+    import_core4.InjectionSymbols.Wallet
   );
   const [did, verkey] = await import_node.agentDependencies.indy.createAndStoreMyDid(
     wallet.handle,
@@ -3108,10 +3220,11 @@ async function registerBusinessCredentialDefinition(agent2, credentialSchemaOrId
 }
 
 // src/subscriptions/connectionListener.ts
-var import_core4 = require("@aries-framework/core");
+var import_core5 = require("@aries-framework/core");
+var import_storage = require("@aries-framework/core/build/storage");
 async function registerAgentConnectionListener(agent2) {
   agent2.events.on(
-    import_core4.ConnectionEventTypes.ConnectionStateChanged,
+    import_core5.ConnectionEventTypes.ConnectionStateChanged,
     ({ payload, metadata, type }) => {
       console.log(
         "[event-listener]: New Connection Response for '@dbin/legal-authority-server' agent."
@@ -3120,10 +3233,10 @@ async function registerAgentConnectionListener(agent2) {
         `[event-listener]: ConnectionRecord & State: ${payload.connectionRecord.id} ++ ${payload.connectionRecord.state} , previousState: ${payload.previousState}`
       );
       switch (payload.connectionRecord.state) {
-        case import_core4.DidExchangeState.Completed:
+        case import_core5.DidExchangeState.Completed:
           pubsub.publish(CONNECTION_ACCEPTED);
           break;
-        case import_core4.DidExchangeState.RequestSent:
+        case import_core5.DidExchangeState.RequestSent:
           pubsub.publish(CONNECTION_REQUEST);
           break;
         default:
@@ -3131,6 +3244,80 @@ async function registerAgentConnectionListener(agent2) {
       }
     }
   );
+  agent2.events.on(
+    import_core5.CredentialEventTypes.CredentialStateChanged,
+    ({ payload, metadata, type }) => {
+      console.log(
+        "[event-listener]: New Credential Message for '@dbin/legal-authority-server' agent."
+      );
+      console.log("[event-listener]: event payload", payload);
+    }
+  );
+  agent2.events.on(
+    import_core5.ProofEventTypes.ProofStateChanged,
+    async ({ payload, type, metadata }) => {
+      switch (payload.proofRecord.state) {
+        case import_core5.ProofState.ProposalReceived:
+          await handleProposalReceivedEvent(agent2, payload);
+        case import_core5.ProofState.RequestReceived:
+          const didCommMessageRepository = agent2.dependencyManager.resolve(
+            import_storage.DidCommMessageRepository
+          );
+          const request = await didCommMessageRepository.findAgentMessage(
+            agent2.context,
+            {
+              associatedRecordId: payload.proofRecord.id,
+              messageClass: import_core5.V2RequestPresentationMessage
+            }
+          );
+          console.log("[event-listener]: Got Presentation Request: ", request);
+          console.log(
+            "[event-listener]: Presentation Attachment data: ",
+            request == null ? void 0 : request.requestPresentationsAttach[0].getDataAsJson()
+          );
+          break;
+        case import_core5.ProofState.PresentationReceived:
+          console.log(
+            "[event-listener]: Got Presentation Event ",
+            payload.proofRecord
+          );
+          const acceptedPresentation = await agent2.proofs.acceptPresentation(
+            payload.proofRecord.id
+          );
+          console.log(
+            "[event-listener]: Presentation was accepted ",
+            acceptedPresentation
+          );
+          break;
+        default:
+          console.log(
+            "[event-listener]: Unhandled `ProofState` event ",
+            payload.proofRecord.state
+          );
+          break;
+      }
+    }
+  );
+}
+async function handleProposalReceivedEvent(agent2, payload) {
+  const didCommMessageRepository = agent2.dependencyManager.resolve(
+    import_storage.DidCommMessageRepository
+  );
+  const proposal = await didCommMessageRepository.findAgentMessage(
+    agent2.context,
+    {
+      associatedRecordId: payload.proofRecord.id,
+      messageClass: import_core5.V2ProposalPresentationMessage
+    }
+  );
+  console.log("[event-listener]: Got Proof Proposal: ", proposal);
+  console.log(
+    `[event-listener]: Attachment Data of Proposal (${proposal == null ? void 0 : proposal.id}): `,
+    proposal == null ? void 0 : proposal.getAttachmentFormats().map((att) => console.log(att.attachment.getDataAsJson()))
+  );
+  await agent2.proofs.acceptProposal({
+    proofRecordId: payload.proofRecord.id
+  });
 }
 
 // src/server.ts
@@ -3147,19 +3334,20 @@ function createGraphQLContext(request) {
   };
 }
 async function initServer(port2) {
+  var _a2;
   const app = (0, import_express.default)();
   app.use((0, import_morgan.default)(":date[iso] :method :url :response-time"));
-  const agentConfig = await import_afj_services4.AgentConfigServices.createAgentConfig({
+  const agentConfig = await import_afj_services5.AgentConfigServices.createAgentConfig({
     label: "@dbin/legal-authority-agent",
     walletConfig: {
       id: "@dbin/legal-authority-wallet",
       key: process.env.WALLET_CONFIG_KEY ?? "testdemoagentforlegal0000000"
     },
-    endpoints: import_afj_services4.AgentConfigServices.resolveEndpointsByEnvironment({ port: port2 }),
-    logger: new import_core5.ConsoleLogger(import_core5.LogLevel.debug),
+    endpoints: import_afj_services5.AgentConfigServices.resolveEndpointsByEnvironment({ port: port2 }),
+    logger: new import_core6.ConsoleLogger(import_core6.LogLevel.debug),
     publicDidSeed: process.env.BCOVRIN_TEST_PUBLIC_DID_SEED
   });
-  agent = await import_afj_services4.AgentConfigServices.createAgent({
+  agent = await import_afj_services5.AgentConfigServices.createAgent({
     config: agentConfig,
     indyLedgers: [
       {
@@ -3170,7 +3358,7 @@ async function initServer(port2) {
       }
     ]
   });
-  agent.registerOutboundTransport(new import_core5.HttpOutboundTransport());
+  agent.registerOutboundTransport(new import_core6.HttpOutboundTransport());
   const inboundTransporter = new import_node2.HttpInboundTransport({
     port: port2,
     app
@@ -3225,6 +3413,9 @@ async function initServer(port2) {
   );
   await registerAgentConnectionListener(agent);
   await checkRegistrationOnLedger(agent);
+  console.log(
+    await ((_a2 = (await agent.proofs.getFormatData("11b0fc26-6d75-4117-b502-f6c84d967b65")).presentation) == null ? void 0 : _a2.indy)
+  );
   console.log(`[server-log]: server running on ${port2}`);
 }
 

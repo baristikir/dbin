@@ -5,6 +5,9 @@ import {
 	ConsoleLogger,
 	HttpOutboundTransport,
 	LogLevel,
+	ProofEventTypes,
+	ProofStateChangedEvent,
+	V2ProposalPresentationMessage,
 } from "@aries-framework/core";
 import { HttpInboundTransport } from "@aries-framework/node";
 import { Server } from "ws";
@@ -15,6 +18,7 @@ import { schema } from "./graphql";
 import { Context } from "./graphql/builder";
 import { checkRegistrationOnLedger } from "./credentialRegistration";
 import { registerAgentConnectionListener } from "./subscriptions/connectionListener";
+import { DidCommMessageRepository } from "@aries-framework/core/build/storage";
 
 let agent: Agent;
 export function getAgent() {
@@ -141,5 +145,10 @@ export async function initServer(port: number) {
 	await registerAgentConnectionListener(agent);
 	await checkRegistrationOnLedger(agent);
 
+	console.log(
+		await (
+			await agent.proofs.getFormatData("11b0fc26-6d75-4117-b502-f6c84d967b65")
+		).presentation?.indy
+	);
 	console.log(`[server-log]: server running on ${port}`);
 }

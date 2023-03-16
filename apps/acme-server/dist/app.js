@@ -182,7 +182,7 @@ var import_afj_services3 = require("@dbin/afj-services");
 var import_graphql_yoga = require("graphql-yoga");
 
 // src/graphql/index.ts
-var import_server_lib2 = require("@dbin/server-lib");
+var import_server_lib = require("@dbin/server-lib");
 
 // src/graphql/builder.ts
 var import_core = __toESM(require("@pothos/core"));
@@ -3707,8 +3707,7 @@ builder.mutationField(
     resolve: async (_root, { input }, { agent: agent2 }) => {
       const credentialServices = new import_afj_services2.CredentialService(agent2);
       const proof = await credentialServices.presentProof(input);
-      console.log("[presentProof]: ", proof);
-      return false;
+      return proof ? true : false;
     }
   })
 );
@@ -3745,89 +3744,11 @@ builder.queryField(
   })
 );
 
-// src/graphql/resolvers/authResolver.ts
-var import_server_lib = require("@dbin/server-lib");
-var import_date_fns = require("date-fns");
-
-// src/utils/prisma.ts
-var import_client = require("@prisma/client");
-var db;
-if (process.env.NODE_ENV === "production") {
-  db = new import_client.PrismaClient({
-    log: ["error", "warn"]
-  });
-} else {
-  db = new import_client.PrismaClient({
-    log: ["info", "query", "error", "warn"]
-  });
-}
-
-// src/graphql/resolvers/authResolver.ts
-var SignInInput = builder.inputType("SignInInput", {
-  fields: (t) => ({
-    email: t.string(),
-    password: t.string()
-  })
-});
-builder.mutationField(
-  "signIn",
-  (t) => t.field({
-    type: "Boolean",
-    skipTypeScopes: true,
-    args: {
-      input: t.arg({ type: SignInInput })
-    },
-    resolve: async (_root, { input }, { req }) => {
-      const user = await db.user.findUnique({
-        where: { email: input.email }
-      });
-      if (!user) {
-        throw new Error(`User with ${input.email} E-Mail not found`);
-      }
-      const isValid2 = await import_server_lib.AuthUtils.verifyPassword({
-        hashedPassword: user.password,
-        password: input.password
-      });
-      if (isValid2) {
-        const session = await db.session.create({
-          data: {
-            userId: user.id,
-            expiresAt: (0, import_date_fns.addSeconds)(new Date(), import_server_lib.SessionUtils.SESSION_TTL)
-          }
-        });
-        if (!session) {
-          throw new Error("Internal Server Error");
-        }
-        req.session.sessionId = session.id;
-        await req.session.save();
-        return true;
-      }
-      req.session.destroy();
-      return false;
-    }
-  })
-);
-builder.queryField(
-  "me",
-  (t) => t.field({
-    type: "Boolean",
-    resolve: async (_root, _args, { user }) => {
-      if (!user) {
-        return false;
-      }
-      const userRecord = await db.user.findUnique({
-        where: { id: user }
-      });
-      return !!userRecord;
-    }
-  })
-);
-
 // src/graphql/index.ts
 var IS_PRODUCTION = process.env.NODE_ENV === "production";
 var schema = builder.toSchema({});
 if (!IS_PRODUCTION) {
-  import_server_lib2.GraphQLUtils.writeSchema(schema, "schema.graphql");
+  import_server_lib.GraphQLUtils.writeSchema(schema, "schema.graphql");
 }
 
 // src/server.ts

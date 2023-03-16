@@ -1,4 +1,8 @@
-import { DidExchangeState } from "@aries-framework/core";
+import {
+	CredentialsApi,
+	CredentialState,
+	DidExchangeState,
+} from "@aries-framework/core";
 import { ConnectionService, CredentialService } from "@dbin/afj-services";
 import { GraphQLObjects } from "@dbin/server-lib";
 import { builder } from "../builder";
@@ -8,9 +12,11 @@ import {
 } from "../../subscriptions/connectionsTopics";
 import { pubsub } from "../../utils/pubsub";
 import { Result, ResultStatus } from "./resultResolver";
-import { getCredentialDefinitionId, getSchemaId } from "../../schemas";
+import { getCredentialDefinitionId } from "../../schemas";
+import { CredentialObjectRef } from "./credentialResolver";
+import { GetFormatDataReturn } from "@aries-framework/core/build/modules/proofs/models/ProofServiceOptions";
 
-const ConnectionObjectRef =
+export const ConnectionObjectRef =
 	builder.objectRef<GraphQLObjects.ConnectionObjectType>("Connection");
 
 // TODO Extract into server-lib
@@ -36,6 +42,100 @@ function getConnectionProtocolVersion(protocol?: string): "v1" | "v2" | null {
 		? "v2"
 		: null;
 }
+
+// let proposalAttributes = [
+//     CredentialPreviewAttribute {
+//       mimeType: 'text/plain',
+//       name: 'company_creation_date',
+//       value: 'Fri Jan 01 1999 01:00:00 GMT+0100 (Central European Standard Time)'
+//     },
+//     CredentialPreviewAttribute {
+//       mimeType: 'text/plain',
+//       name: 'company_registered_name',
+//       value: 'Nestle'
+//     },
+//     CredentialPreviewAttribute {
+//       mimeType: 'text/plain',
+//       name: 'company_registered_adress',
+//       value: 'Example Adress 123'
+//     },
+//     CredentialPreviewAttribute {
+//       mimeType: 'text/plain',
+//       name: 'company_registered_country',
+//       value: 'Germany'
+//     },
+//     CredentialPreviewAttribute {
+//       mimeType: 'text/plain',
+//       name: 'company_status',
+//       value: 'active'
+//     }
+//   ],
+
+let proposal = {
+	indy: {
+		schema_issuer_did: "SYiUQo2fGYKkUqk7evkJT1",
+		schema_id: "SYiUQo2fGYKkUqk7evkJT1:2:BusinessCredential:1.0",
+		schema_name: "BusinessCredential",
+		schema_version: "1.0",
+		cred_def_id: "SYiUQo2fGYKkUqk7evkJT1:3:CL:13157:BusinessCredentialDefinition",
+		issuer_did: "SYiUQo2fGYKkUqk7evkJT1",
+	},
+};
+interface ConnectionCredentialProposal {
+	schema_issuer_did: string;
+	schema_id: string;
+	schema_name: string;
+	schema_version: string;
+	cred_def_id: string;
+	issuer_did: string;
+}
+interface ConnectionCredentialProposalAttribute {
+	mimeType: string;
+	name: string;
+	value: string;
+}
+interface ConnectionCredentialMessage {
+	credentialId: string;
+	credentialState: CredentialState;
+	proposal: ConnectionCredentialProposal;
+	proposalAttributes: ConnectionCredentialProposalAttribute[];
+}
+const ConnectionCredentialProposalRef = builder
+	.objectRef<ConnectionCredentialProposal>("ConnectionCredentialProposal")
+	.implement({
+		fields: (t) => ({
+			credentialDefinitionId: t.exposeString("cred_def_id"),
+			schemaId: t.exposeString("schema_id"),
+			schemaIssuerDid: t.exposeString("schema_issuer_did"),
+			schemaName: t.exposeString("schema_name"),
+			schemaVersion: t.exposeString("schema_version"),
+			issuerDid: t.exposeString("issuer_did"),
+		}),
+	});
+const ConnectionCredentialProposalAttributeRef = builder
+	.objectRef<ConnectionCredentialProposalAttribute>(
+		"ConnectionCredentialProposalAttribute"
+	)
+	.implement({
+		fields: (t) => ({
+			mime: t.exposeString("mimeType"),
+			name: t.exposeString("name"),
+			value: t.exposeString("value"),
+		}),
+	});
+
+const ConnectionCredentialMessageRef = builder
+	.objectRef<ConnectionCredentialMessage>("ConnectionCredentialMessage")
+	.implement({
+		fields: (t) => ({
+			credentialId: t.exposeString("credentialId"),
+			credentialState: t.exposeString("credentialState"),
+			proposal: t.expose("proposal", { type: ConnectionCredentialProposalRef }),
+			attributes: t.expose("proposalAttributes", {
+				type: [ConnectionCredentialProposalAttributeRef],
+			}),
+		}),
+	});
 
 // TODO Extract field definitions into server-lib
 // https://pothos-graphql.dev/docs/guide/patterns#objects-and-interfaces
@@ -84,6 +184,47 @@ ConnectionObjectRef.implement({
 		isRequester: t.boolean({
 			resolve: (parent) => parent.isRequester,
 		}),
+		messages: t.field({
+			type: [ConnectionCredentialMessageRef],
+			resolve: async (parent, _args, { agent }) => {
+				const credentials = await agent.credentials.getAll();
+				const credentialsByConnection = credentials.filter(
+					(credential) => credential.connectionId === parent.id
+				);
+
+				// Temporary solution for type issues from the aries-framework-node library
+				type CredentialFormatData = GetFormatDataReturn & {
+					credentialId: string;
+					proposal: Record<string, ConnectionCredentialProposal>;
+					proposalAttributes: ConnectionCredentialProposalAttribute[];
+					credentialState: CredentialState;
+				};
+				let credsData: CredentialFormatData[] = [];
+				for (const credential of credentialsByConnection) {
+					const credentialPayload = (await agent.credentials.getFormatData(
+						credential.id
+					)) as any;
+					// Temporary solution for type issues from the aries-framework-node library
+					credsData.push({
+						...credentialPayload,
+						credentialId: credential.id,
+						credentialState: credential.state,
+					});
+				}
+
+				// Temporary solution for mismatching types from aries-framework-node lib
+				const payload: (ConnectionCredentialMessage & { credentialId: string })[] =
+					credsData.map((credential, idx) => ({
+						credentialId: credential.credentialId,
+						credentialState: credential.credentialState,
+						proposal: {
+							...credential.proposal.indy,
+						},
+						proposalAttributes: credential.proposalAttributes,
+					}));
+				return payload;
+			},
+		}),
 	}),
 });
 
@@ -122,6 +263,7 @@ builder.queryField("connections", (t) =>
 builder.queryField("connection", (t) =>
 	t.field({
 		type: ConnectionObjectRef,
+		nullable: true,
 		args: {
 			id: t.arg.string(),
 		},

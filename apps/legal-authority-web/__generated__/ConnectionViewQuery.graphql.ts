@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<45bc23c49c9fd2c5694c0259e8217f52>>
+ * @generated SignedSource<<e72a9354e099640eaeb8f4f8678543eb>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -15,8 +15,11 @@ export type ConnectionViewQuery$variables = {
 };
 export type ConnectionViewQuery$data = {
   readonly connection: {
+    readonly messages: ReadonlyArray<{
+      readonly " $fragmentSpreads": FragmentRefs<"ConnectionCredentialsInfo_message">;
+    }>;
     readonly " $fragmentSpreads": FragmentRefs<"Content_connection">;
-  };
+  } | null;
 };
 export type ConnectionViewQuery = {
   response: ConnectionViewQuery$data;
@@ -57,6 +60,22 @@ return {
             "args": null,
             "kind": "FragmentSpread",
             "name": "Content_connection"
+          },
+          {
+            "alias": null,
+            "args": null,
+            "concreteType": "ConnectionCredentialMessage",
+            "kind": "LinkedField",
+            "name": "messages",
+            "plural": true,
+            "selections": [
+              {
+                "args": null,
+                "kind": "FragmentSpread",
+                "name": "ConnectionCredentialsInfo_message"
+              }
+            ],
+            "storageKey": null
           }
         ],
         "storageKey": null
@@ -197,6 +216,116 @@ return {
             "kind": "ScalarField",
             "name": "errMessage",
             "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "concreteType": "ConnectionCredentialMessage",
+            "kind": "LinkedField",
+            "name": "messages",
+            "plural": true,
+            "selections": [
+              {
+                "alias": null,
+                "args": null,
+                "kind": "ScalarField",
+                "name": "credentialId",
+                "storageKey": null
+              },
+              {
+                "alias": null,
+                "args": null,
+                "kind": "ScalarField",
+                "name": "credentialState",
+                "storageKey": null
+              },
+              {
+                "alias": null,
+                "args": null,
+                "concreteType": "ConnectionCredentialProposal",
+                "kind": "LinkedField",
+                "name": "proposal",
+                "plural": false,
+                "selections": [
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "credentialDefinitionId",
+                    "storageKey": null
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "schemaId",
+                    "storageKey": null
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "schemaName",
+                    "storageKey": null
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "schemaIssuerDid",
+                    "storageKey": null
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "schemaVersion",
+                    "storageKey": null
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "issuerDid",
+                    "storageKey": null
+                  }
+                ],
+                "storageKey": null
+              },
+              {
+                "alias": null,
+                "args": null,
+                "concreteType": "ConnectionCredentialProposalAttribute",
+                "kind": "LinkedField",
+                "name": "attributes",
+                "plural": true,
+                "selections": [
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "mime",
+                    "storageKey": null
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "name",
+                    "storageKey": null
+                  },
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "value",
+                    "storageKey": null
+                  }
+                ],
+                "storageKey": null
+              }
+            ],
+            "storageKey": null
           }
         ],
         "storageKey": null
@@ -204,16 +333,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "ce93c3bb0c7172c087873703eed044d6",
+    "cacheID": "c6669b227b862b467ccb014e0208c1cd",
     "id": null,
     "metadata": {},
     "name": "ConnectionViewQuery",
     "operationKind": "query",
-    "text": "query ConnectionViewQuery(\n  $id: String!\n) {\n  connection(id: $id) {\n    ...Content_connection\n  }\n}\n\nfragment Content_connection on Connection {\n  id\n  state\n  rawState\n  role\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n  threadId\n  invitationDid\n  oobId\n  mediatorId\n  isReady\n  isRequester\n  autoAcceptConnection\n  errMessage\n}\n"
+    "text": "query ConnectionViewQuery(\n  $id: String!\n) {\n  connection(id: $id) {\n    ...Content_connection\n    messages {\n      ...ConnectionCredentialsInfo_message\n    }\n  }\n}\n\nfragment ConnectionCredentialsInfo_message on ConnectionCredentialMessage {\n  credentialId\n  credentialState\n  proposal {\n    credentialDefinitionId\n    schemaId\n    schemaName\n    schemaIssuerDid\n    schemaVersion\n    issuerDid\n  }\n  attributes {\n    mime\n    name\n    value\n  }\n}\n\nfragment Content_connection on Connection {\n  id\n  state\n  rawState\n  role\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n  threadId\n  invitationDid\n  oobId\n  mediatorId\n  isReady\n  isRequester\n  autoAcceptConnection\n  errMessage\n}\n"
   }
 };
 })();
 
-(node as any).hash = "b5ea34c63ec374b40be788c1db4e5f21";
+(node as any).hash = "c07f58e5320277ee4d5ebd65191f5482";
 
 export default node;

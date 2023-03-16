@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<ffc1f6d7e77fe8c239cc114443244bb3>>
+ * @generated SignedSource<<d84c636de8e9ab9d1ecfdd707da6f967>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -14,7 +14,7 @@ export type HomeViewConnectionsQuery$variables = {};
 export type HomeViewConnectionsQuery$data = {
   readonly agent: {
     readonly connections: ReadonlyArray<{
-      readonly " $fragmentSpreads": FragmentRefs<"ConnectionCard_connection">;
+      readonly " $fragmentSpreads": FragmentRefs<"ConnectionCard_connection" | "ProposeNewCredentialModal_connection">;
     }>;
     readonly credentials: ReadonlyArray<{
       readonly id: string;
@@ -73,6 +73,11 @@ return {
                 "args": null,
                 "kind": "FragmentSpread",
                 "name": "ConnectionCard_connection"
+              },
+              {
+                "args": null,
+                "kind": "FragmentSpread",
+                "name": "ProposeNewCredentialModal_connection"
               }
             ],
             "storageKey": null
@@ -230,16 +235,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "72f0e2a7658dba716e6bf18f767ba7a2",
+    "cacheID": "79ffbf04c346c3d614dc7057d1fcd58d",
     "id": null,
     "metadata": {},
     "name": "HomeViewConnectionsQuery",
     "operationKind": "query",
-    "text": "query HomeViewConnectionsQuery {\n  agent {\n    connections {\n      ...ConnectionCard_connection\n    }\n    credentials {\n      id\n    }\n  }\n}\n\nfragment ConnectionCard_connection on Connection {\n  id\n  theirDid\n  theirLabel\n  state\n  role\n  ...ConnectionDetailsModal_connection\n}\n\nfragment ConnectionDetailsModal_connection on Connection {\n  id\n  state\n  isStateCompleted\n  role\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n  threadId\n  invitationDid\n  oobId\n  mediatorId\n  isReady\n  isRequester\n  autoAcceptConnection\n  errMessage\n}\n"
+    "text": "query HomeViewConnectionsQuery {\n  agent {\n    connections {\n      ...ConnectionCard_connection\n      ...ProposeNewCredentialModal_connection\n    }\n    credentials {\n      id\n    }\n  }\n}\n\nfragment ConnectionCard_connection on Connection {\n  id\n  theirDid\n  theirLabel\n  state\n  role\n  ...ConnectionDetailsModal_connection\n}\n\nfragment ConnectionDetailsModal_connection on Connection {\n  id\n  state\n  isStateCompleted\n  role\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n  threadId\n  invitationDid\n  oobId\n  mediatorId\n  isReady\n  isRequester\n  autoAcceptConnection\n  errMessage\n}\n\nfragment ProposeNewCredentialModal_connection on Connection {\n  id\n  state\n  isStateCompleted\n  role\n  protocol\n  protocolVersion\n  did\n  theirDid\n  theirLabel\n  threadId\n  invitationDid\n  oobId\n  mediatorId\n  isReady\n  isRequester\n  autoAcceptConnection\n  errMessage\n}\n"
   }
 };
 })();
 
-(node as any).hash = "eabbf7b3d2a104fc45dc8bd77916466a";
+(node as any).hash = "b8ab25abf9a392e6854443701c1d96e8";
 
 export default node;

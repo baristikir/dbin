@@ -3,6 +3,8 @@ import {
 	InitConfig,
 	IndyPoolConfig,
 	ConnectionsModule,
+	CredentialsModule,
+	AutoAcceptCredential,
 } from "@aries-framework/core";
 import { agentDependencies } from "@aries-framework/node";
 import { fetchGenesisTransaction } from "./ledgerServices";
@@ -102,6 +104,9 @@ export async function createAgent({ config, indyLedgers }: CreateAgentProps) {
 		modules: {
 			connections: new ConnectionsModule({
 				autoAcceptConnections: true,
+			}),
+			credentials: new CredentialsModule({
+				autoAcceptCredentials: AutoAcceptCredential.ContentApproved,
 			}),
 		},
 	});

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<f146564faac8726a66172107fba1f15c>>
+ * @generated SignedSource<<ac1105f303cc51d3ba341ff09b946035>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -10,6 +10,7 @@
 
 import { ConcreteRequest, Mutation } from 'relay-runtime';
 export type ProposeCredentialInput = {
+  connectionId: string;
   created_at: string;
   registered_adress: string;
   registered_country: string;

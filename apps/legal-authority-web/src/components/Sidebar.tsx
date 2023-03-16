@@ -2,7 +2,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { Browsers, ListDashes, LockKey, Wallet } from "phosphor-react";
+import { Browsers, ListDashes, Wallet } from "phosphor-react";
 import { IconButton } from "@dbin/ui";
 
 export function Sidebar() {
@@ -51,18 +51,6 @@ export function Sidebar() {
 								className="mr-4 h-5 w-5"
 							/>
 							<p>Connections</p>
-						</>
-					)}
-				</NavigationLink>
-
-				<NavigationLink href="/issued-credentials">
-					{(state) => (
-						<>
-							<LockKey
-								weight={state === true ? "duotone" : "regular"}
-								className="mr-4 h-5 w-5"
-							/>
-							<p>Issued Credentials</p>
 						</>
 					)}
 				</NavigationLink>

@@ -51,6 +51,7 @@ export function HomeView({}: Props) {
 				agent {
 					connections {
 						...ConnectionCard_connection
+						...ProposeNewCredentialModal_connection
 					}
 					credentials {
 						id
@@ -84,6 +85,7 @@ export function HomeView({}: Props) {
 				setIsOpen={(value) => handleModalStateChange("connect_with_agent", value)}
 			/>
 			<ProposeNewCredentialModal
+				queryRef={data.agent.connections}
 				isOpen={state.isProposeOpen}
 				setIsOpen={(value) => handleModalStateChange("propose_credential", value)}
 			/>

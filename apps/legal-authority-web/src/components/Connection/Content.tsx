@@ -4,7 +4,6 @@ import { ReactNode, useCallback, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 import {
 	Check,
-	Key,
 	Trash,
 	Clipboard as ClipboardIcon,
 	ArrowLeft,
@@ -67,10 +66,6 @@ export const ConnectionDetailContent = ({ queryRef }: Props) => {
 		});
 	}, []);
 
-	const handleIssueCredentialClick = () => {
-		router.push(String(`${router.asPath}/issue-credential`));
-	};
-
 	const handleBackToConnections = () => {
 		router.push("/connections");
 	};
@@ -90,15 +85,6 @@ export const ConnectionDetailContent = ({ queryRef }: Props) => {
 			<div className="flex w-full flex-col items-stretch justify-start gap-2 2xl:flex-row 2xl:items-center 2xl:justify-between">
 				<h1 className="text-3xl font-medium">Connection Details</h1>
 				<div className="flex items-center gap-4">
-					<Button
-						disabled={isInFlight}
-						size="sm"
-						variant="system-contrast"
-						onClick={handleIssueCredentialClick}
-					>
-						<Key className="mr-2 h-4 w-4" />
-						<p>Issue Credential</p>
-					</Button>
 					<Button
 						disabled={isInFlight}
 						size="sm"
