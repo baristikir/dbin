@@ -173,12 +173,12 @@ var require_main = __commonJS({
 var import_dotenv = __toESM(require_main());
 
 // src/server.ts
+var import_cors = __toESM(require("cors"));
 var import_express = __toESM(require("express"));
 var import_morgan = __toESM(require("morgan"));
-var import_core3 = require("@aries-framework/core");
+var import_core4 = require("@aries-framework/core");
 var import_node = require("@aries-framework/node");
 var import_afj_services3 = require("@dbin/afj-services");
-var import_server_lib3 = require("@dbin/server-lib");
 var import_graphql_yoga = require("graphql-yoga");
 
 // src/graphql/index.ts
@@ -191,9 +191,8 @@ var import_plugin_validation = __toESM(require("@pothos/plugin-validation"));
 var builder = new import_core.default({
   defaultInputFieldRequiredness: true,
   plugins: [import_plugin_scope_auth.default, import_plugin_validation.default],
-  authScopes: ({ agent: agent2, user }) => ({
-    withAgent: !!agent2,
-    userId: !!user
+  authScopes: ({ agent: agent2 }) => ({
+    withAgent: !!agent2
   })
 });
 builder.queryType({
@@ -337,6 +336,7 @@ builder.mutationField(
 );
 
 // src/graphql/resolvers/credentialResolver.ts
+var import_core3 = require("@aries-framework/core");
 var import_afj_services2 = require("@dbin/afj-services");
 
 // ../../node_modules/zod/lib/index.mjs
@@ -3623,6 +3623,7 @@ CredentialObjectRef.implement({
 });
 var ProposeCredentialInput = builder.inputType("ProposeCredentialInput", {
   fields: (t) => ({
+    connectionId: t.string(),
     registered_name: t.string(),
     registered_country: t.string(),
     registered_adress: t.string(),
@@ -3646,6 +3647,7 @@ builder.mutationField(
     },
     resolve: async (_root, { input }, { agent: agent2 }) => {
       const credentialServices = new import_afj_services2.CredentialService(agent2);
+      const connectionServices = new import_afj_services2.ConnectionService(agent2);
       const attributes = {
         registered_name: input.registered_name,
         registered_adress: input.registered_adress,
@@ -3658,6 +3660,54 @@ builder.mutationField(
         console.log("Arguments do not match with credential definition.");
         throw new Error("Input args do not match with credential definition.");
       }
+      const connectionRecord = await connectionServices.connectionById(
+        input.connectionId
+      );
+      if (!connectionRecord) {
+        throw new Error("No such connection record was found in agents storage.");
+      }
+      const credentialPreview = import_core3.V2CredentialPreview.fromRecord({
+        company_creation_date: attributes.created_at.toString(),
+        company_registered_name: attributes.registered_name,
+        company_registered_adress: attributes.registered_adress,
+        company_registered_country: attributes.registered_country,
+        company_status: "active"
+      });
+      const proposal = await credentialServices.proposeCredential({
+        connectionId: input.connectionId,
+        credentialFormats: {
+          indy: {
+            attributes: credentialPreview.attributes,
+            schemaIssuerDid: "SYiUQo2fGYKkUqk7evkJT1",
+            schemaName: "BusinessCredential",
+            schemaVersion: "1.0",
+            schemaId: "SYiUQo2fGYKkUqk7evkJT1:2:BusinessCredential:1.0",
+            issuerDid: "SYiUQo2fGYKkUqk7evkJT1",
+            credentialDefinitionId: "SYiUQo2fGYKkUqk7evkJT1:3:CL:13157:BusinessCredentialDefinition"
+          }
+        }
+      });
+      return true;
+    }
+  })
+);
+var PresentProofInput = builder.inputType("PresentProofInput", {
+  fields: (t) => ({
+    connectionId: t.string(),
+    credentialId: t.string()
+  })
+});
+builder.mutationField(
+  "presentProof",
+  (t) => t.field({
+    type: "Boolean",
+    args: {
+      input: t.arg({ type: PresentProofInput })
+    },
+    resolve: async (_root, { input }, { agent: agent2 }) => {
+      const credentialServices = new import_afj_services2.CredentialService(agent2);
+      const proof = await credentialServices.presentProof(input);
+      console.log("[presentProof]: ", proof);
       return false;
     }
   })
@@ -3677,8 +3727,10 @@ AgentObjectRef.implement({
     }),
     credentials: t.field({
       type: [CredentialObjectRef],
-      resolve: (_root, _args, { agent: agent2 }) => {
-        return agent2.credentials.getAll();
+      resolve: async (_root, _args, { agent: agent2 }) => {
+        const creds = await agent2.credentials.getAll();
+        console.log(creds);
+        return creds;
       }
     })
   })
@@ -3779,7 +3831,6 @@ if (!IS_PRODUCTION) {
 }
 
 // src/server.ts
-var import_cors = __toESM(require("cors"));
 var agent;
 function getAgent() {
   if (!agent)
@@ -3787,32 +3838,14 @@ function getAgent() {
   return agent;
 }
 async function createGraphQLContext(context) {
-  let userId;
-  if ("req" in context && context.req.session.sessionId) {
-    const session = await db.session.findUnique({
-      where: { id: context.req.session.sessionId },
-      select: { user: true }
-    });
-    userId = session == null ? void 0 : session.user.id;
-  }
-  console.log("[req] IncomingMessage from userId: ", userId);
   return {
     req: context.req,
-    user: userId,
     agent: getAgent()
   };
 }
 async function initServer(port2) {
   const app = (0, import_express.default)();
   app.use((0, import_morgan.default)(":date[iso] :method :url :response-time"));
-  const SECRET_SESSION_KEY = process.env.SESSION_COOKIE_PASSWORD;
-  if (!SECRET_SESSION_KEY) {
-    throw new Error("Secret Session Key could not be found.");
-  }
-  const session = await import_server_lib3.SessionUtils.createIronSession({
-    cookieName: "session.info",
-    password: SECRET_SESSION_KEY
-  });
   const agentConfig = await import_afj_services3.AgentConfigServices.createAgentConfig({
     label: "@dbin/acme-agent",
     walletConfig: {
@@ -3822,7 +3855,7 @@ async function initServer(port2) {
     endpoints: import_afj_services3.AgentConfigServices.resolveEndpointsByEnvironment({
       port: port2
     }),
-    logger: new import_core3.ConsoleLogger(import_core3.LogLevel.debug)
+    logger: new import_core4.ConsoleLogger(import_core4.LogLevel.debug)
   });
   agent = await import_afj_services3.AgentConfigServices.createAgent({
     config: agentConfig,
@@ -3835,7 +3868,7 @@ async function initServer(port2) {
       }
     ]
   });
-  agent.registerOutboundTransport(new import_core3.HttpOutboundTransport());
+  agent.registerOutboundTransport(new import_core4.HttpOutboundTransport());
   const inboundTransporter = new import_node.HttpInboundTransport({
     port: port2,
     app
@@ -3859,9 +3892,33 @@ async function initServer(port2) {
       credentials: true
     })
   );
-  app.use("/api/graphql", session, yoga);
+  app.use("/api/graphql", yoga);
   await agent.initialize();
+  await registerAgentConnectionListener(agent);
   console.log(`[server-log]: server running on ${port2}`);
+}
+async function registerAgentConnectionListener(agent2) {
+  agent2.events.on(
+    import_core4.ProofEventTypes.ProofStateChanged,
+    async ({ payload, type, metadata }) => {
+      switch (payload.proofRecord.state) {
+        case import_core4.ProofState.RequestReceived:
+          const requestedCredentials = await agent2.proofs.autoSelectCredentialsForProofRequest({
+            proofRecordId: payload.proofRecord.id,
+            config: {}
+          });
+          await agent2.proofs.acceptRequest({
+            proofRecordId: payload.proofRecord.id,
+            proofFormats: {
+              indy: requestedCredentials.proofFormats.indy
+            }
+          });
+          break;
+        default:
+          break;
+      }
+    }
+  );
 }
 
 // src/app.ts

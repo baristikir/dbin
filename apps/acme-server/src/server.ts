@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import {
@@ -5,16 +6,15 @@ import {
 	ConsoleLogger,
 	HttpOutboundTransport,
 	LogLevel,
+	ProofEventTypes,
+	ProofState,
+	ProofStateChangedEvent,
 } from "@aries-framework/core";
 import { HttpInboundTransport } from "@aries-framework/node";
 import { AgentConfigServices } from "@dbin/afj-services";
-import { AuthUtils, SessionUtils } from "@dbin/server-lib";
 import { createYoga, YogaInitialContext } from "graphql-yoga";
-import { getIronSession } from "iron-session";
 import { schema } from "./graphql";
 import { Context } from "./graphql/builder";
-import cors from "cors";
-import { db } from "./utils/prisma";
 import { IncomingMessage, OutgoingMessage } from "http";
 
 let agent: Agent;
@@ -26,20 +26,8 @@ export function getAgent() {
 async function createGraphQLContext(
 	context: YogaInitialContext & { req: IncomingMessage; res: OutgoingMessage }
 ): Promise<Context> {
-	let userId: string | undefined;
-	if ("req" in context && context.req.session.sessionId) {
-		const session = await db.session.findUnique({
-			where: { id: context.req.session.sessionId },
-			select: { user: true },
-		});
-		userId = session?.user.id;
-	}
-
-	console.log("[req] IncomingMessage from userId: ", userId);
-
 	return {
 		req: context.req! as IncomingMessage,
-		user: userId,
 		agent: getAgent(),
 	};
 }
@@ -48,15 +36,6 @@ export async function initServer(port: number) {
 	const app = express();
 	// Server incoming request logger for APIs
 	app.use(morgan(":date[iso] :method :url :response-time"));
-
-	const SECRET_SESSION_KEY = process.env.SESSION_COOKIE_PASSWORD;
-	if (!SECRET_SESSION_KEY) {
-		throw new Error("Secret Session Key could not be found.");
-	}
-	const session = await SessionUtils.createIronSession({
-		cookieName: "session.info",
-		password: SECRET_SESSION_KEY,
-	});
 
 	//#region Aries Agent Setup
 	// Creating Aries agent config
@@ -120,16 +99,37 @@ export async function initServer(port: number) {
 			credentials: true,
 		})
 	);
-	app.use("/api/graphql", session, yoga);
+	app.use("/api/graphql", yoga);
 	//#endregion
 
 	await agent.initialize();
 
+	await registerAgentConnectionListener(agent);
 	console.log(`[server-log]: server running on ${port}`);
 }
 
-declare module "iron-session" {
-	interface IronSessionData {
-		sessionId?: string | null;
-	}
+export async function registerAgentConnectionListener(agent: Agent) {
+	agent.events.on<ProofStateChangedEvent>(
+		ProofEventTypes.ProofStateChanged,
+		async ({ payload, type, metadata }) => {
+			switch (payload.proofRecord.state) {
+				case ProofState.RequestReceived:
+					const requestedCredentials =
+						await agent.proofs.autoSelectCredentialsForProofRequest({
+							proofRecordId: payload.proofRecord.id,
+							config: {},
+						});
+					await agent.proofs.acceptRequest({
+						proofRecordId: payload.proofRecord.id,
+						proofFormats: {
+							indy: requestedCredentials.proofFormats.indy,
+						},
+					});
+					break;
+
+				default:
+					break;
+			}
+		}
+	);
 }

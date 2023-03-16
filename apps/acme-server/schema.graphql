@@ -46,12 +46,19 @@ scalar DateTime
 
 type Mutation {
   acceptInvitation(input: ConnectWithAgentInput!): Boolean!
+  presentProof(input: PresentProofInput!): Boolean!
   proposeCredential(input: ProposeCredentialInput!): Boolean!
   removeConnection(input: RemoveConnectionInput!): Boolean!
   signIn(input: SignInInput!): Boolean!
 }
 
+input PresentProofInput {
+  connectionId: String!
+  credentialId: String!
+}
+
 input ProposeCredentialInput {
+  connectionId: String!
   created_at: String!
   registered_adress: String!
   registered_country: String!
