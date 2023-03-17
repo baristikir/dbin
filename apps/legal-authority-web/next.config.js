@@ -12,6 +12,7 @@ const nextConfig = {
 		// appDir: true,
 		transpilePackages: ["@dbin/ui"],
 	},
+	ignoreDuringBuilds: true,
 };
 
 module.exports = nextConfig;

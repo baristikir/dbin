@@ -89,7 +89,6 @@ builder.mutationField("acceptProposal", (t) =>
 			const updatedCredentialRecord = await credentialServices.acceptProposal(
 				input.credentialId
 			);
-			console.log(updatedCredentialRecord);
 
 			return {
 				status: ResultStatus.SUCCESS,

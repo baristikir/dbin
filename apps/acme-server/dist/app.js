@@ -3673,7 +3673,7 @@ builder.mutationField(
         company_registered_country: attributes.registered_country,
         company_status: "active"
       });
-      const proposal = await credentialServices.proposeCredential({
+      await credentialServices.proposeCredential({
         connectionId: input.connectionId,
         credentialFormats: {
           indy: {

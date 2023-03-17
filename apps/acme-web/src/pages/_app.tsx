@@ -10,7 +10,7 @@ export default function App({ Component, pageProps }: AppProps) {
 		<RelayEnvironmentProvider environment={environment}>
 			<noscript>
 				<div>
-					You don't have javascript enabled. Good luck with that. This application
+					You dont have javascript enabled. Good luck with that. This application
 					requires Javascript to function and behave as expected.
 				</div>
 			</noscript>

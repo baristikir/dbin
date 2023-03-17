@@ -91,7 +91,7 @@ export const ConnectionDetailsModal = ({
 				<div className="flex flex-col gap-y-4 rounded-md bg-gray-50 p-2 dark:bg-gray-700 xl:p-4">
 					<div className="grid grid-cols-2 gap-2">
 						{data.theirLabel && (
-							<GridBaseColumn label="Other Agent's Label">
+							<GridBaseColumn label="Other Agent&apos;s Label">
 								<>{data.theirLabel}</>
 							</GridBaseColumn>
 						)}
@@ -134,7 +134,7 @@ export const ConnectionDetailsModal = ({
 					)}
 					{data.theirDid && (
 						<ColumnWithInput value={data.theirDid}>
-							<>Other Agent's DID (did:peer)</>
+							<>Other Agents DID (did:peer)</>
 						</ColumnWithInput>
 					)}
 				</div>

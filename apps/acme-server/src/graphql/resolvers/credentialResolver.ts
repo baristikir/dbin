@@ -78,7 +78,7 @@ builder.mutationField("proposeCredential", (t) =>
 				company_status: "active",
 			});
 
-			const proposal = await credentialServices.proposeCredential({
+			await credentialServices.proposeCredential({
 				connectionId: input.connectionId,
 				credentialFormats: {
 					indy: {

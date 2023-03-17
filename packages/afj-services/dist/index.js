@@ -205,11 +205,9 @@ var CredentialService = class extends ServiceWithAgent {
   }
   async acceptProposal(credentialRecordId) {
     try {
-      console.log({ credentialRecordId });
       const credentialPayload = await this.agent.credentials.getFormatData(
         credentialRecordId
       );
-      console.log({ credentialPayload });
       return await this.agent.credentials.acceptProposal({
         credentialRecordId,
         credentialFormats: {
@@ -223,15 +221,17 @@ var CredentialService = class extends ServiceWithAgent {
       console.log(
         `[error]: Accepting credential proposal with ${credentialRecordId} id failed.`
       );
-      console.log(`[error]: `, error);
-      return null;
+      throw new Error("Accepting Proposal failed.");
     }
   }
   async presentProof({
     connectionId,
     credentialId
   }) {
-    const [credential] = await (await this.agent.credentials.getAll()).filter((cred) => cred.id === credentialId && cred.state === "done");
+    const credential = await this.agent.credentials.getById(credentialId);
+    if (credential.state !== "done") {
+      throw new Error("Credential not found");
+    }
     const credentialData = await this.agent.credentials.getFormatData(
       credential.id
     );
@@ -290,7 +290,6 @@ var CredentialService = class extends ServiceWithAgent {
       console.log(
         "[createConnectionlessProof()]: Error Credential Record not found."
       );
-      console.log(error);
       return null;
     }
   }
@@ -345,10 +344,7 @@ var ConnectionService = class extends ServiceWithAgent {
       const connectionRecord = await this.agent.connections.findById(connectionId);
       return connectionRecord;
     } catch (error) {
-      console.log(
-        `[info]: Connection record with ${connectionId} id could not be found.`
-      );
-      return null;
+      throw new Error(`Connection with id ${connectionId} could not be found.`);
     }
   }
   async hasConnection(connectionId) {
@@ -357,11 +353,7 @@ var ConnectionService = class extends ServiceWithAgent {
       connectionRecord = await this.agent.connections.findById(connectionId);
       return true;
     } catch (error) {
-      console.log(
-        "[ConnectionServices] hasConnection -> No Connection was found. Error:",
-        error
-      );
-      return false;
+      throw new Error("Connection not found.");
     }
   }
   async removeConnection(connectionOrId) {
@@ -369,10 +361,7 @@ var ConnectionService = class extends ServiceWithAgent {
     if (typeof connectionOrId === "string") {
       connectionRecord = await this.agent.connections.findById(connectionOrId);
       if (connectionRecord === null) {
-        console.log(
-          `[connection.services] Connection record couldn't be found with id '${connectionOrId}'`
-        );
-        return false;
+        throw new Error("Connection not found in Agents Wallet.");
       }
     } else {
       const isConnected = await this.hasConnection(connectionOrId.id);
